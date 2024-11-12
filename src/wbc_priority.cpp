@@ -792,7 +792,7 @@ void WBC_priority::copy_Eigen_to_real_t(qpOASES::real_t *target, const Eigen::Ma
 
     for (int i = 0; i < nRows; i++) {
         for (int j = 0; j < nCols; j++) {
-            target[count++] = isinf(source(i, j)) ? qpOASES::INFTY : source(i, j);
+            target[count++] = std::isinf(source(i, j)) ? qpOASES::INFTY : source(i, j);
         }
     }
 }

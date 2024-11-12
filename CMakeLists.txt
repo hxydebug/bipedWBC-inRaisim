@@ -59,6 +59,8 @@ target_link_libraries(nlctest
     alglib_sdk
 )
 
+set(SOURCES src/pino_kin_dyn.cpp src/wbc_priority.cpp src/priority_tasks.cpp src/useful_math.cpp)
+
 #链接库
 set(corLibs pinocchio quill)
 #根据架构，处理连接库
@@ -83,13 +85,13 @@ add_library(control	src/control.cpp)
 add_library(gait_generator	src/gait_generator.cpp)
 add_library(model	src/model.cpp)
 add_library(opmath	src/opmath.cpp)
-add_library(pino_kin_dyn	src/pino_kin_dyn.cpp)
+add_library(core  ${SOURCES})
 
 target_link_libraries(model PUBLIC raisim::raisim pthread opmath)
 target_include_directories(model PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
-target_link_libraries(pino_kin_dyn ${sysCoreLibs} pthread qpOASES libjsoncpp.so libconsole_bridge.so liburdfdom_model.so libtinyxml.so)
-target_include_directories(pino_kin_dyn PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_link_libraries(core ${sysCoreLibs} pthread qpOASES libjsoncpp.so libconsole_bridge.so liburdfdom_model.so libtinyxml.so)
+target_include_directories(core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 target_link_libraries(opmath PUBLIC pthread)
 target_include_directories(opmath PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
@@ -113,7 +115,7 @@ add_executable(qptest qptest.cpp)
 target_link_libraries(qptest qpOASES)
 
 add_executable(Biped main.cpp)
-target_link_libraries(Biped PUBLIC pino_kin_dyn raisim::raisim pthread leg_controller model opmath swing_leg_controller stance_leg_controller gait_generator control)
+target_link_libraries(Biped PUBLIC core raisim::raisim pthread leg_controller model opmath swing_leg_controller stance_leg_controller gait_generator control)
 target_include_directories(Biped PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/rsc DESTINATION ${CMAKE_BINARY_DIR})
