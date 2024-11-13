@@ -12,7 +12,7 @@ Feel free to use in any purpose, and cite OpenLoong-Dynamics-Control in any styl
 #include "wbc_priority.h"
 #include "iostream"
 
-// QP_nvIn=18, QP_ncIn=22
+// QP_nvIn=12, QP_ncIn=16
 WBC_priority::WBC_priority(int model_nv_In, int QP_nvIn, int QP_ncIn, double miu_In, double dt) : QP_prob(QP_nvIn,
                                                                                                           QP_ncIn) {
     timeStep = dt;
@@ -46,7 +46,7 @@ WBC_priority::WBC_priority(int model_nv_In, int QP_nvIn, int QP_ncIn, double miu
 
     eigen_xOpt = Eigen::VectorXd::Zero(QP_nv);
     eigen_ddq_Opt = Eigen::VectorXd::Zero(model_nv);
-    eigen_fr_Opt = Eigen::VectorXd::Zero(12);
+    eigen_fr_Opt = Eigen::VectorXd::Zero(6);
     eigen_tau_Opt = Eigen::VectorXd::Zero(model_nv - 6);
 
     delta_q_final_kin = Eigen::VectorXd::Zero(model_nv);
@@ -59,7 +59,6 @@ WBC_priority::WBC_priority(int model_nv_In, int QP_nvIn, int QP_ncIn, double miu
     ///------------ walk --------------
     kin_tasks_walk.addTask("static_Contact");
     kin_tasks_walk.addTask("Roll_Pitch_Yaw_Pz");
-    kin_tasks_walk.addTask("RedundantJoints");
     kin_tasks_walk.addTask("PxPy");
     kin_tasks_walk.addTask("SwingLeg");
     kin_tasks_walk.addTask("HandTrack");
@@ -67,14 +66,9 @@ WBC_priority::WBC_priority(int model_nv_In, int QP_nvIn, int QP_ncIn, double miu
     kin_tasks_walk.addTask("PosRot");
 
     std::vector<std::string> taskOrder_walk;
-    taskOrder_walk.emplace_back("RedundantJoints");
     taskOrder_walk.emplace_back("static_Contact");
-//    taskOrder_walk.emplace_back("Roll_Pitch_Yaw_Pz");
-//    taskOrder_walk.emplace_back("PxPy");
     taskOrder_walk.emplace_back("PosRot");
     taskOrder_walk.emplace_back("SwingLeg");
-    taskOrder_walk.emplace_back("HandTrackJoints");
-
 
     kin_tasks_walk.buildPriority(taskOrder_walk);
 
@@ -199,7 +193,7 @@ void WBC_priority::dataBusWrite(DataBus &robotState) {
     robotState.qp_cpuTime = cpu_time;
 }
 
-// QP problem contains joint torque, QP_nv=6+12, QP_nc=22;
+// QP problem contains joint torque, QP_nv=6+6, QP_nc=22;
 void WBC_priority::computeTau() {
     // constust the QP problem, refer to the md file for more details
     Eigen::MatrixXd eigen_qp_A1 = Eigen::MatrixXd::Zero(6, QP_nv);// 18 means the sum of dims of delta_r and delta_Fr

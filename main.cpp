@@ -6,6 +6,8 @@
 #include <iostream>
 #include <fstream>
 #include "pino_kin_dyn.h"
+#include "useful_math.h"
+#include "wbc_priority.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -56,9 +58,9 @@ int main(int argc, char* argv[]) {
  	swing_leg_controller swc(&robot,&gait_gen,0);
  	stance_leg_controller stc(&robot,&gait_gen,0);
   leg_controller l_control(&robot,&gait_gen,&swc,&stc);
-  Pin_KinDyn kinDynSolver("rsc/AzureLoong.urdf"); // kinematics and dynamics solver
-  // std::cout<< kinDynSolver.model_nv << std::endl;
-
+  Pin_KinDyn kinDynSolver("rsc/biped.urdf"); // kinematics and dynamics solver
+  DataBus RobotState(kinDynSolver.model_nv); // data bus
+  WBC_priority WBC_solv(kinDynSolver.model_nv, 12, 16, 0.45, 0.001); // WBC solver
   /// launch raisim server for visualization. Can be visualized using raisimUnity
   raisim::RaisimServer server(&world);
   server.launchServer();
