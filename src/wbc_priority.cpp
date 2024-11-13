@@ -134,12 +134,12 @@ void WBC_priority::dataBusRead(const DataBus &robotState) {
     hip_link_rot=robotState.hip_link_rot;
     J_hip_link=robotState.J_hip_link;
 
-    Jfe = Eigen::MatrixXd::Zero(12, model_nv);
-    Jfe.block(0, 0, 6, model_nv) = robotState.J_l;
-    Jfe.block(6, 0, 6, model_nv) = robotState.J_r;
-    dJfe = Eigen::MatrixXd::Zero(12, model_nv);
-    dJfe.block(0, 0, 6, model_nv) = robotState.dJ_l;
-    dJfe.block(6, 0, 6, model_nv) = robotState.dJ_r;
+    Jfe = Eigen::MatrixXd::Zero(6, model_nv);
+    Jfe.block(0, 0, 3, model_nv) = robotState.J_l;
+    Jfe.block(3, 0, 3, model_nv) = robotState.J_r;
+    dJfe = Eigen::MatrixXd::Zero(6, model_nv);
+    dJfe.block(0, 0, 3, model_nv) = robotState.dJ_l;
+    dJfe.block(3, 0, 3, model_nv) = robotState.dJ_r;
     J_hd_l = robotState.J_hd_l;
     J_hd_r = robotState.J_hd_r;
     dJ_hd_l = robotState.J_hd_l;
@@ -193,13 +193,13 @@ void WBC_priority::dataBusWrite(DataBus &robotState) {
     robotState.qp_cpuTime = cpu_time;
 }
 
-// QP problem contains joint torque, QP_nv=6+6, QP_nc=22;
+// QP problem contains joint torque, QP_nv=6+6, QP_nc=16;
 void WBC_priority::computeTau() {
     // constust the QP problem, refer to the md file for more details
     Eigen::MatrixXd eigen_qp_A1 = Eigen::MatrixXd::Zero(6, QP_nv);// 18 means the sum of dims of delta_r and delta_Fr
     eigen_qp_A1.block<6, 6>(0, 0) = Sf * dyn_M * St_qpV1;
 
-    eigen_qp_A1.block<6, 12>(0, 6) = -Sf * Jfe.transpose();
+    eigen_qp_A1.block<6, 6>(0, 6) = -Sf * Jfe.transpose();
 
     Eigen::VectorXd eqRes = Eigen::VectorXd::Zero(6);
     eqRes = -Sf * dyn_M * ddq_final_kin - Sf * dyn_Non + Sf * Jfe.transpose() * Fr_ff;
