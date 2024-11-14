@@ -5,6 +5,10 @@ Feel free to use in any purpose, and cite OpenLoong-Dynamics-Control in any styl
  <https://atomgit.com/openloong/openloong-dyn-control.git>
  <web@openloong.org.cn>
 */
+// Modified by Xinyan Huang on 24-11-13
+// used for point foot biped robot
+//
+
 #include "pino_kin_dyn.h"
 
 #include <utility>
