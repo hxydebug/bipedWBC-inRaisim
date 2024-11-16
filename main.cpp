@@ -60,9 +60,8 @@ int main(int argc, char* argv[]) {
   leg_controller l_control(&robot,&gait_gen,&swc,&stc);
   Pin_KinDyn kinDynSolver("rsc/biped.urdf"); // kinematics and dynamics solver
   DataBus RobotState(kinDynSolver.model_nv); // data bus
-  cout << "2" << endl;
   WBC_priority WBC_solv(kinDynSolver.model_nv, 12, 16, 0.45, 0.001); // WBC solver
-  cout << "3" << endl;
+  
   /// launch raisim server for visualization. Can be visualized using raisimUnity
   raisim::RaisimServer server(&world);
   server.launchServer();
@@ -81,15 +80,10 @@ int main(int argc, char* argv[]) {
     robot.dataBusWrite(RobotState);
 
     // update kinematics and dynamics info
-    cout << "4" << endl;
     kinDynSolver.dataBusRead(RobotState);
-    cout << "5" << endl;
     kinDynSolver.computeJ_dJ();
-    cout << "6" << endl;
     kinDynSolver.computeDyn();
-    cout << "7" << endl;
     kinDynSolver.dataBusWrite(RobotState);
-    cout << "8" << endl;
     Eigen::Vector3d p_com_des,w_com_des,dp_com_des,dw_com_des;
     p_com_des<<0,0,0.5;//0.41~0.42
     dp_com_des<<0,0,0;

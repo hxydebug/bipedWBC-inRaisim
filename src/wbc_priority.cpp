@@ -93,10 +93,6 @@ void WBC_priority::dataBusRead(const DataBus &robotState) {
     stance_fe_pos_cur_W = robotState.stance_fe_pos_cur_W;
     stance_fe_rot_cur_W = robotState.stance_fe_rot_cur_W;
     stanceDesPos_W = robotState.stanceDesPos_W;
-    hd_l_pos_cur_W = robotState.hd_l_pos_W;
-    hd_r_pos_cur_W = robotState.hd_r_pos_W;
-    hd_l_rot_cur_W = robotState.hd_l_rot_W;
-    hd_r_rot_cur_W = robotState.hd_r_rot_W;
     fe_l_pos_cur_W = robotState.fe_l_pos_W;
     fe_r_pos_cur_W = robotState.fe_r_pos_W;
     fe_l_rot_cur_W = robotState.fe_l_rot_W;
@@ -111,20 +107,13 @@ void WBC_priority::dataBusRead(const DataBus &robotState) {
     dJ_base = robotState.dJ_base;
     base_rot = robotState.base_rot;
     base_pos = robotState.base_pos;
-    hip_link_pos=robotState.hip_link_pos;
-    hip_link_rot=robotState.hip_link_rot;
-    J_hip_link=robotState.J_hip_link;
 
     Jfe = Eigen::MatrixXd::Zero(6, model_nv);
-    Jfe.block(0, 0, 3, model_nv) = robotState.J_l;
-    Jfe.block(3, 0, 3, model_nv) = robotState.J_r;
+    Jfe.block(0, 0, 3, model_nv) = robotState.J_l.block(0, 0, 3, model_nv);;
+    Jfe.block(3, 0, 3, model_nv) = robotState.J_r.block(0, 0, 3, model_nv);;
     dJfe = Eigen::MatrixXd::Zero(6, model_nv);
-    dJfe.block(0, 0, 3, model_nv) = robotState.dJ_l;
-    dJfe.block(3, 0, 3, model_nv) = robotState.dJ_r;
-    J_hd_l = robotState.J_hd_l;
-    J_hd_r = robotState.J_hd_r;
-    dJ_hd_l = robotState.J_hd_l;
-    dJ_hd_r = robotState.J_hd_r;
+    dJfe.block(0, 0, 3, model_nv) = robotState.dJ_l.block(0, 0, 3, model_nv);;
+    dJfe.block(3, 0, 3, model_nv) = robotState.dJ_r.block(0, 0, 3, model_nv);;
     Fr_ff = robotState.Fr_ff;
     dyn_M = robotState.dyn_M;
     dyn_M_inv = robotState.dyn_M_inv;
@@ -376,8 +365,8 @@ void WBC_priority::computeDdq(Pin_KinDyn &pinKinDynIn) {
         kin_tasks_walk.taskLib[id].kp = Eigen::MatrixXd::Identity(3, 3) * 2000;
         kin_tasks_walk.taskLib[id].kp.block<1, 1>(2, 2) = kin_tasks_walk.taskLib[id].kp.block<1, 1>(2, 2) * 0.1;
         kin_tasks_walk.taskLib[id].kd = Eigen::MatrixXd::Identity(3, 3) * 20;
-        kin_tasks_walk.taskLib[id].J = Jsw;
-        kin_tasks_walk.taskLib[id].dJ = dJsw;
+        kin_tasks_walk.taskLib[id].J = Jsw.block(0, 0, 3, model_nv);
+        kin_tasks_walk.taskLib[id].dJ = dJsw.block(0, 0, 3, model_nv);
         kin_tasks_walk.taskLib[id].W.diagonal() = Eigen::VectorXd::Ones(model_nv);
 
     }

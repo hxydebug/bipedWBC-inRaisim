@@ -20,11 +20,11 @@ Pin_KinDyn::Pin_KinDyn(std::string urdf_pathIn) {
     data_biped=pinocchio::Data(model_biped);
     data_biped_fixed=pinocchio::Data(model_biped_fixed);
     model_nv=model_biped.nv;
-    J_l=Eigen::MatrixXd::Zero(3,model_nv);
-    J_r=Eigen::MatrixXd::Zero(3,model_nv);
+    J_l=Eigen::MatrixXd::Zero(6,model_nv);
+    J_r=Eigen::MatrixXd::Zero(6,model_nv);
     J_base=Eigen::MatrixXd::Zero(6,model_nv);
-    dJ_l=Eigen::MatrixXd::Zero(3,model_nv);
-    dJ_r=Eigen::MatrixXd::Zero(3,model_nv);
+    dJ_l=Eigen::MatrixXd::Zero(6,model_nv);
+    dJ_r=Eigen::MatrixXd::Zero(6,model_nv);
     dJ_base=Eigen::MatrixXd::Zero(6,model_nv);
     q.setZero();
     dq.setZero();
