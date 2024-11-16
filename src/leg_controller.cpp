@@ -22,6 +22,8 @@ leg_controller::leg_controller(robot *biped,gait_generator *gait_gen,swing_leg_c
   posT.resize(6);
   angT.resize(6);
   Tau_e.resize(6);
+  stc_tau.resize(6);
+  swc_tau.resize(6);
   set_xyz(fl,&init_angle[0],0-detx,0.08+0.06,-0.2-detz);
   set_xyz(fr,&init_angle[1],0-detx,-0.08-0.06,-0.2-detz);
   // set_xyz(fl,&init_angle[0],0.05,0.08,-0.32);
@@ -156,13 +158,13 @@ Eigen::VectorXd leg_controller::get_action(int Run_mode,Eigen::VectorXd user_cmd
     gait_generate->update(timer);
 
     // ground reaction force calculate    ***** it can be put in another pthread *****
-    Eigen::VectorXd stc_tau = stctr->get_action(user_cmd);
+    stc_tau = stctr->get_action(user_cmd);
     // Eigen::VectorXd stc_tau(6);
     // stc_tau.setConstant(0);
 
     // position controller
     swctr->update(timer);
-    Eigen::VectorXd swc_tau = swctr->get_action(user_cmd);
+    swc_tau = swctr->get_action(user_cmd);
 
     Eigen::VectorXd ltau(3),rtau(3);
     if(gait_generate->leg_state[0]==stance_leg || gait_generate->leg_state[0]==Early_Contact){
@@ -195,6 +197,10 @@ Eigen::VectorXd leg_controller::get_action(int Run_mode,Eigen::VectorXd user_cmd
 
   return Tau_e;
 
+}
+
+void leg_controller::dataBusWrite(DataBus &busIn){
+  
 }
 Eigen::VectorXd leg_controller::tau(Eigen::VectorXd pA,Eigen::VectorXd vA,Eigen::VectorXd pT,Eigen::VectorXd vT){
   
