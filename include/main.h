@@ -5,6 +5,7 @@
 #include "raisim/RaisimServer.hpp"
 #include "raisim/math.hpp"
 #include "opmath.h"
+#include "data_bus.h"
 
 // #define period 200
 // #define Run_gait 0

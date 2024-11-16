@@ -85,7 +85,6 @@ public:
     IkRes computeInK_Hand(const Eigen::Matrix3d &Rdes_L, const Eigen::Vector3d &Pdes_L, const Eigen::Matrix3d &Rdes_R, const Eigen::Vector3d &Pdes_R);
     Eigen::VectorXd integrateDIY(const Eigen::VectorXd &qI, const Eigen::VectorXd &dqI);
     static Eigen::Quaterniond intQuat(const Eigen::Quaterniond &quat, const Eigen::Matrix<double,3,1> &w);
-    void workspaceConstraint(Eigen::VectorXd &qFT, Eigen::VectorXd &tauJointFT);
 private:
     pinocchio::Data data_biped, data_biped_fixed;
 

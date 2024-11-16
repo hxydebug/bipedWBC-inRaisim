@@ -175,9 +175,7 @@ struct DataBus{
 
     // update q according to sensor values, must update sensor values before
     void updateQ(){
-        base_omega_W << baseAngVel[0],baseAngVel[1],baseAngVel[2];
         auto Rcur= eul2Rot(rpy[0], rpy[1], rpy[2]);
-        base_omega_W=Rcur*base_omega_W;
 
         //  q = [global_base_position, global_base_quaternion, joint_positions]
         //  dq = [global_base_velocity_linear, global_base_velocity_angular, joint_velocities]
@@ -196,8 +194,11 @@ struct DataBus{
         Eigen::Vector3d vCoM_W;
         vCoM_W << baseLinVel[0],baseLinVel[1],baseLinVel[2];
         dq.block<3,1>(0,0)= vCoM_W;
-        dq.block<3,1>(3,0) << base_omega_W[0],base_omega_W[1],base_omega_W[2];
-//        dq.block<3,1>(3,0) << baseAngVel[0],baseAngVel[1],baseAngVel[2];
+        // if use IMU, use it
+        // base_omega_W << baseAngVel[0],baseAngVel[1],baseAngVel[2];
+        // base_omega_W=Rcur*base_omega_W;
+        // dq.block<3,1>(3,0) << base_omega_W[0],base_omega_W[1],base_omega_W[2];
+        dq.block<3,1>(3,0) << baseAngVel[0],baseAngVel[1],baseAngVel[2];
         for (int i=0;i<model_nv-6;i++)
         {
             dq(i+6)=motors_vel_cur[i];

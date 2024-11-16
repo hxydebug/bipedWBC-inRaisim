@@ -189,8 +189,8 @@ Eigen::VectorXd leg_controller::get_action(int Run_mode,Eigen::VectorXd user_cmd
   }
 
   for(int i(0);i<6;i++){
-		if(Tau_e[i] < -24.0) Tau_e[i] = -24.0;
-		if(Tau_e[i] > 24.0) Tau_e[i] = 24.0;
+		if(Tau_e[i] < -48.0) Tau_e[i] = -48.0;
+		if(Tau_e[i] > 48.0) Tau_e[i] = 48.0;
 	}
 
   return Tau_e;

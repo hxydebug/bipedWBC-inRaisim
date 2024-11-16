@@ -8,7 +8,7 @@
 #include "pino_kin_dyn.h"
 #include "useful_math.h"
 #include "wbc_priority.h"
-
+#include "useful_math.h"
 #include <stdio.h>
 #include <stdlib.h>
 using namespace std;
@@ -61,6 +61,7 @@ int main(int argc, char* argv[]) {
   Pin_KinDyn kinDynSolver("rsc/biped.urdf"); // kinematics and dynamics solver
   DataBus RobotState(kinDynSolver.model_nv); // data bus
   WBC_priority WBC_solv(kinDynSolver.model_nv, 12, 16, 0.45, 0.001); // WBC solver
+
   /// launch raisim server for visualization. Can be visualized using raisimUnity
   raisim::RaisimServer server(&world);
   server.launchServer();
@@ -76,6 +77,14 @@ int main(int argc, char* argv[]) {
     raisim::MSLEEP(1);
     // get sensor data
     robot.update_state();
+    robot.dataBusWrite(RobotState);
+
+    // update kinematics and dynamics info
+    kinDynSolver.dataBusRead(RobotState);
+    kinDynSolver.computeJ_dJ();
+    kinDynSolver.computeDyn();
+    kinDynSolver.dataBusWrite(RobotState);
+
     Eigen::Vector3d p_com_des,w_com_des,dp_com_des,dw_com_des;
     p_com_des<<0,0,0.5;//0.41~0.42
     dp_com_des<<0,0,0;
@@ -102,18 +111,18 @@ int main(int argc, char* argv[]) {
     //joint angle position
     auto anglepos = robot.get_leg_pos();
 
-    dataFile << anglepos[0] << ", " << anglepos[1] << ", " <<anglepos[2] << ", "  
-             << anglepos[3] << ", " << anglepos[4] << ", " <<anglepos[5] << ", " 
-             << swc.postarget[0].x << ", " << swc.postarget[0].y << ", " <<swc.postarget[0].z << ", "  
-             << swc.postarget[1].x << ", " << swc.postarget[1].y << ", " <<swc.postarget[1].z << ", "
-             << stc.desired_states[0] << ", " << stc.desired_states[1] << ", " <<stc.desired_states[2] << ", "
-             << stc.desired_states[3] << ", " << stc.desired_states[4] << ", " <<stc.desired_states[5] << ", "
-             << stc.desired_states[6] << ", " << stc.desired_states[7] << ", " <<stc.desired_states[8] << ", "
-             << stc.desired_states[9] << ", " << stc.desired_states[10] << ", " <<stc.desired_states[11] << ", "
-             << stc.states[0] << ", " << stc.states[1] << ", " <<stc.states[2] << ", "
-             << stc.states[3] << ", " << stc.states[4] << ", " <<stc.states[5] << ", "
-             << stc.states[6] << ", " << stc.states[7] << ", " <<stc.states[8] << ", "
-             << stc.states[9] << ", " << stc.states[10] << ", " <<stc.states[11] << std::endl;
+    // dataFile << anglepos[0] << ", " << anglepos[1] << ", " <<anglepos[2] << ", "  
+    //          << anglepos[3] << ", " << anglepos[4] << ", " <<anglepos[5] << ", " 
+    //          << swc.postarget[0].x << ", " << swc.postarget[0].y << ", " <<swc.postarget[0].z << ", "  
+    //          << swc.postarget[1].x << ", " << swc.postarget[1].y << ", " <<swc.postarget[1].z << ", "
+    //          << stc.desired_states[0] << ", " << stc.desired_states[1] << ", " <<stc.desired_states[2] << ", "
+    //          << stc.desired_states[3] << ", " << stc.desired_states[4] << ", " <<stc.desired_states[5] << ", "
+    //          << stc.desired_states[6] << ", " << stc.desired_states[7] << ", " <<stc.desired_states[8] << ", "
+    //          << stc.desired_states[9] << ", " << stc.desired_states[10] << ", " <<stc.desired_states[11] << ", "
+    //          << stc.states[0] << ", " << stc.states[1] << ", " <<stc.states[2] << ", "
+    //          << stc.states[3] << ", " << stc.states[4] << ", " <<stc.states[5] << ", "
+    //          << stc.states[6] << ", " << stc.states[7] << ", " <<stc.states[8] << ", "
+    //          << stc.states[9] << ", " << stc.states[10] << ", " <<stc.states[11] << std::endl;
 
     server.integrateWorldThreadSafe();
 

@@ -36,6 +36,7 @@ public:
 	void update_angle();
 	std::vector<int> GetFootContact();
 	void step(Eigen::VectorXd leg_tau,Eigen::VectorXd body_tau);
+	void dataBusWrite(DataBus &busIn);
 private:
 	Eigen::VectorXd pos;
 	Eigen::VectorXd vel;

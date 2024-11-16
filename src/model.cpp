@@ -44,6 +44,30 @@ void robot::step(Eigen::VectorXd leg_tau,Eigen::VectorXd body_tau){
     // cout << tau << endl;
     biped->setGeneralizedForce(tau);
 }
+
+void robot::dataBusWrite(DataBus &busIn){
+    std::vector<double> std_vec1(pos.tail(6).data(), pos.tail(6).data() + pos.tail(6).size());
+    std::vector<double> std_vec2(vel.tail(6).data(), vel.tail(6).data() + vel.tail(6).size());
+    busIn.motors_pos_cur=std_vec1;
+    busIn.motors_vel_cur=std_vec2;
+    Eigen::VectorXd rpy = robot::get_base_rpy();
+    busIn.rpy[0]=rpy[0];
+    busIn.rpy[1]=rpy[1];
+    busIn.rpy[2]=rpy[2];
+
+    busIn.basePos[0]=pos[0];
+    busIn.basePos[1]=pos[1];
+    busIn.basePos[2]=pos[2];
+    busIn.baseLinVel[0]=vel[0];
+    busIn.baseLinVel[1]=vel[1];
+    busIn.baseLinVel[2]=vel[2];
+
+    busIn.baseAngVel[0]=vel[3];
+    busIn.baseAngVel[1]=vel[4];
+    busIn.baseAngVel[2]=vel[5];
+    busIn.updateQ();
+}
+
 void robot::update_state(){
     biped->getState(pos,vel);
 
