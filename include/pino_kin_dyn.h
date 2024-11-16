@@ -47,8 +47,8 @@ public:
     Eigen::VectorXd q,dq,ddq;
     Eigen::Matrix3d Rcur;
     Eigen::Quaternion<double> quatCur;
-    Eigen::Matrix<double,6,-1> J_r, J_l, J_hd_r, J_hd_l, J_base, J_hip_link;
-    Eigen::Matrix<double,6,-1> dJ_r,dJ_l, dJ_hd_r, dJ_hd_l, dJ_base, dJ_hip_link;
+    Eigen::MatrixXd J_r, J_l, J_hd_r, J_hd_l, J_base, J_hip_link;
+    Eigen::MatrixXd dJ_r,dJ_l, dJ_hd_r, dJ_hd_l, dJ_base, dJ_hip_link;
     Eigen::Matrix<double,3,-1> Jcom;
     Eigen::Vector3d fe_r_pos, fe_l_pos, base_pos;    // foot-end position in world frame
     Eigen::Vector3d fe_r_pos_body, fe_l_pos_body;  // foot-end position in body frame

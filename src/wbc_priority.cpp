@@ -353,7 +353,7 @@ void WBC_priority::computeDdq(Pin_KinDyn &pinKinDynIn) {
             kin_tasks_walk.taskLib[id].errX(0)=0.02* sign(kin_tasks_walk.taskLib[id].errX(0));
         if (fabs(kin_tasks_walk.taskLib[id].errX(1))>=0.01)
             kin_tasks_walk.taskLib[id].errX(1)=0.01* sign(kin_tasks_walk.taskLib[id].errX(1));
-        desRot = eul2Rot(base_rpy_des(0), base_rpy_des(1), base_rpy_des(2));
+        Eigen::Matrix3d desRot = eul2Rot(base_rpy_des(0), base_rpy_des(1), base_rpy_des(2));
         kin_tasks_walk.taskLib[id].errX.block<3, 1>(3, 0) = diffRot(base_rot, desRot);
         kin_tasks_walk.taskLib[id].derrX = Eigen::VectorXd::Zero(6);
         kin_tasks_walk.taskLib[id].ddxDes = Eigen::VectorXd::Zero(6);
@@ -412,14 +412,14 @@ void WBC_priority::computeDdq(Pin_KinDyn &pinKinDynIn) {
         kin_tasks_stand.taskLib[id].W.diagonal() = Eigen::VectorXd::Ones(model_nv);
 
         id = kin_tasks_stand.getId("CoMXY_HipRPY");
-        taskMapRPY = Eigen::MatrixXd::Zero(3, 6);
+        Eigen::MatrixXd taskMapRPY = Eigen::MatrixXd::Zero(3, 6);
         taskMapRPY(0, 3) = 1;
         taskMapRPY(1, 4) = 1;
         taskMapRPY(2, 5) = 1;
         kin_tasks_stand.taskLib[id].errX = Eigen::VectorXd::Zero(5);
         kin_tasks_stand.taskLib[id].errX.block(0,0,2,1) = pCoMDes.block(0,0,2,1)-pCoMCur.block(0,0,2,1);
 //            kin_tasks_stand.taskLib[id].errX[0]+=0.01;
-        desRot = eul2Rot(base_rpy_des(0), base_rpy_des(1), base_rpy_des(2));
+        Eigen::Matrix3d  desRot = eul2Rot(base_rpy_des(0), base_rpy_des(1), base_rpy_des(2));
         kin_tasks_stand.taskLib[id].errX.block<3, 1>(2, 0) = diffRot(hip_link_rot, desRot);
         kin_tasks_stand.taskLib[id].derrX = Eigen::VectorXd::Zero(5);
 //            kin_tasks_stand.taskLib[id].derrX.block(0,0,2,1)=-(Jcom*dq).block(0,0,2,1);
