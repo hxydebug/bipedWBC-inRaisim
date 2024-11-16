@@ -72,6 +72,8 @@ int main(int argc, char* argv[]) {
   float global_timer = 0;
 
   user_cmd<< -0.2,0.0,0.45,0;   //vx,vy,height,dyaw
+  double x_com_desire=0.0;
+  double y_com_desire=0.0;
   
   while(1){
     raisim::MSLEEP(1);
@@ -101,9 +103,49 @@ int main(int argc, char* argv[]) {
     // body_tau << 0,0,0,0,0,0;
     leg_tau = l_control.get_action(2,user_cmd);
     l_control.dataBusWrite(RobotState);
+
+    // ------------- WBC ------------
+    // WBC input
+    RobotState.des_ddq = Eigen::VectorXd::Zero(kinDynSolver.model_nv);
+    RobotState.des_dq = Eigen::VectorXd::Zero(kinDynSolver.model_nv);
+    RobotState.des_delta_q = Eigen::VectorXd::Zero(kinDynSolver.model_nv);
+    x_com_desire +=  user_cmd[0] * 0.001;
+    y_com_desire +=  user_cmd[1] * 0.001;
+    RobotState.base_rpy_des << 0, 0, 0;
+    RobotState.base_pos_des << x_com_desire, y_com_desire, user_cmd[2];
+
+    // adjust des_delata_q, des_dq and des_ddq to achieve forward walking
+    if (global_timer>0.5) {
+        RobotState.des_delta_q.block<2, 1>(0, 0) << user_cmd[0] *0.001, user_cmd[1] * 0.001;
+        RobotState.des_delta_q(5) = user_cmd[3] * 0.001;
+        RobotState.des_dq.block<2, 1>(0, 0) <<  user_cmd[0] ,  user_cmd[1] ;
+        RobotState.des_dq(5) = user_cmd[3];
+
+        double k = 5;
+        RobotState.des_ddq.block<2, 1>(0, 0) << k * (user_cmd[0] - RobotState.dq(0)), k * (user_cmd[1] -
+                                                                                              RobotState.dq(1));
+        RobotState.des_ddq(5) = k * (user_cmd[3] - RobotState.dq(5));
+    }
+
     // leg_tau << 0,0,0,0,0,0;
     // cout << leg_tau <<endl;
-    robot.step(leg_tau,body_tau);
+    if (global_timer>0.5) {
+      // WBC Calculation
+      WBC_solv.dataBusRead(RobotState);
+      WBC_solv.computeDdq(kinDynSolver);
+      WBC_solv.computeTau();
+      WBC_solv.dataBusWrite(RobotState);
+
+      // get the final joint torque
+      Eigen::VectorXd pos_des=kinDynSolver.integrateDIY(RobotState.q, RobotState.wbc_delta_q_final);
+      RobotState.motors_pos_des = eigen2std(pos_des.block(7,0, model_nv-6,1));
+      RobotState.motors_vel_des = eigen2std(RobotState.wbc_dq_final);
+      RobotState.motors_tor_des = eigen2std(RobotState.wbc_tauJointRes);
+      robot.step(RobotState.motors_tor_des,body_tau);
+    }
+    else{
+      robot.step(leg_tau,body_tau);
+    }
     // fix test 
     // Eigen::VectorXd jointNominalConfig(Biped->getGeneralizedCoordinateDim()), jointVelocityTarget(Biped->getDOF());
     // jointNominalConfig<<  0, 0, 0.6, RpyToqua(0.0*PII/180.0,0.0*PII/180.0,0.0*PII/180.0),
