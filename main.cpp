@@ -84,6 +84,8 @@ int main(int argc, char* argv[]) {
     kinDynSolver.computeJ_dJ();
     kinDynSolver.computeDyn();
     kinDynSolver.dataBusWrite(RobotState);
+
+    RobotState.motionState = DataBus::Walk; 
     
     Eigen::Vector3d p_com_des,w_com_des,dp_com_des,dw_com_des;
     p_com_des<<0,0,0.5;//0.41~0.42
@@ -91,12 +93,14 @@ int main(int argc, char* argv[]) {
     w_com_des<<0,0,0;
     dw_com_des<<0,0,0;
     body_tau = l_control.control_body_directly(p_com_des, w_com_des, dp_com_des, dw_com_des);
-    if(global_timer>0.5)  
-    body_tau << 0,0,0,0,0,0;
+    if(global_timer>0.5){
+      body_tau << 0,0,0,0,0,0;
+    }
     // if(global_timer>2)  body_tau = l_control.control_body_directly2(p_com_des, w_com_des, dp_com_des, dw_com_des);
     // if(global_timer>5)  
     // body_tau << 0,0,0,0,0,0;
     leg_tau = l_control.get_action(2,user_cmd);
+    l_control.dataBusWrite(RobotState);
     // leg_tau << 0,0,0,0,0,0;
     // cout << leg_tau <<endl;
     robot.step(leg_tau,body_tau);

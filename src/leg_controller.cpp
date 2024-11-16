@@ -199,8 +199,13 @@ Eigen::VectorXd leg_controller::get_action(int Run_mode,Eigen::VectorXd user_cmd
 
 }
 
-void leg_controller::dataBusWrite(DataBus &busIn){
-  
+void leg_controller::dataBusWrite(DataBus &robotState){
+  robotState.legState=gait_generate->leg_state[1];
+  robotState.swing_fe_pos_des_W = swctr->foot_position_now;
+  RobotState.Fr_ff = Eigen::VectorXd::Zero(6);
+  RobotState.Fr_ff = stctr->GRF;
+
+
 }
 Eigen::VectorXd leg_controller::tau(Eigen::VectorXd pA,Eigen::VectorXd vA,Eigen::VectorXd pT,Eigen::VectorXd vT){
   

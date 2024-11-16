@@ -75,6 +75,7 @@ public:
     float bike_tau;
     Eigen::VectorXd desired_states;
     Eigen::VectorXd states;
+    Eigen::VectorXd GRF;
     
 private:
     gait_generator *_gait_generator;

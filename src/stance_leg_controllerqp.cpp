@@ -88,6 +88,7 @@ stance_leg_controller::stance_leg_controller(robot *bike,gait_generator *gait_ge
   y_com_desire = 0;
   yaw_com_desire = 0;
   I_error.setZero();
+  GRF..resize(6);
 }
 
 Eigen::VectorXd stance_leg_controller::get_act(void){
@@ -254,6 +255,7 @@ Eigen::VectorXd stance_leg_controller::get_action(Eigen::VectorXd user_cmd){
     Eigen::VectorXd l_force,r_force;
     l_force = force_E.head(3);
     r_force = force_E.tail(3);
+    GRF << l_force, r_force;
     Eigen::VectorXd ltau(3),rtau(3);
     if (footcontact[0] == 0){
         ltau << 0,0,0;

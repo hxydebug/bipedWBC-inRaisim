@@ -20,7 +20,7 @@ public:
 	Eigen::VectorXd get_action(int Run_mode,Eigen::VectorXd user_cmd);
 	void create_gait(void);
 	void goto_xyz(float xx,float yy,float zz,Leg leg);
-	void dataBusWrite(DataBus &busIn);
+	void dataBusWrite(DataBus &robotState);
 	Eigen::VectorXd stc_tau, swc_tau;
 private:
 	robot *biped_robot;
