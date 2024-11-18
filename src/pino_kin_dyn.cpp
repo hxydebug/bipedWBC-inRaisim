@@ -36,10 +36,10 @@ Pin_KinDyn::Pin_KinDyn(std::string urdf_pathIn) {
     dyn_G=Eigen::MatrixXd::Zero(model_nv,1);
 
     // get joint index for Pinocchio Lib, need to redefined the joint name for new model
-    r_ankle_joint=model_biped.getJointId("FR_foot_fixed");
-    l_ankle_joint=model_biped.getJointId("FL_foot_fixed");
-    r_ankle_joint_fixed=model_biped_fixed.getJointId("FR_foot_fixed");
-    l_ankle_joint_fixed=model_biped_fixed.getJointId("FL_foot_fixed");
+    r_ankle_joint=model_biped.getFrameId("FR_foot");
+    l_ankle_joint=model_biped.getFrameId("FL_foot");
+    r_ankle_joint_fixed=model_biped_fixed.getFrameId("FR_foot");
+    l_ankle_joint_fixed=model_biped_fixed.getFrameId("FL_foot");
     base_joint=model_biped.getJointId("root_joint");
 
     // read json file
@@ -110,22 +110,24 @@ void Pin_KinDyn::dataBusWrite(DataBus &robotState) {
 void Pin_KinDyn::computeJ_dJ() {
     pinocchio::forwardKinematics(model_biped,data_biped,q);
     pinocchio::jacobianCenterOfMass(model_biped, data_biped, q, true);
-//    pinocchio::computeJointJacobians(model_biped,data_biped,q);
+    pinocchio::computeJointJacobians(model_biped,data_biped,q);
     pinocchio::computeJointJacobiansTimeVariation(model_biped,data_biped,q,dq);
     pinocchio::updateGlobalPlacements(model_biped,data_biped);
-    pinocchio::getJointJacobian(model_biped,data_biped,r_ankle_joint,pinocchio::LOCAL_WORLD_ALIGNED,J_r);
-    pinocchio::getJointJacobian(model_biped,data_biped,l_ankle_joint,pinocchio::LOCAL_WORLD_ALIGNED,J_l);
+    pinocchio::updateFramePlacements(model_biped,data_biped);
+
+    pinocchio::getFrameJacobian(model_biped,data_biped,r_ankle_joint,pinocchio::LOCAL_WORLD_ALIGNED,J_r);
+    pinocchio::getFrameJacobian(model_biped,data_biped,l_ankle_joint,pinocchio::LOCAL_WORLD_ALIGNED,J_l);
     pinocchio::getJointJacobian(model_biped,data_biped,base_joint,pinocchio::LOCAL_WORLD_ALIGNED,J_base);
 
-    pinocchio::getJointJacobianTimeVariation(model_biped,data_biped,r_ankle_joint,pinocchio::LOCAL_WORLD_ALIGNED,dJ_r);
-    pinocchio::getJointJacobianTimeVariation(model_biped,data_biped,l_ankle_joint,pinocchio::LOCAL_WORLD_ALIGNED,dJ_l);
+    pinocchio::getFrameJacobianTimeVariation(model_biped,data_biped,r_ankle_joint,pinocchio::LOCAL_WORLD_ALIGNED,dJ_r);
+    pinocchio::getFrameJacobianTimeVariation(model_biped,data_biped,l_ankle_joint,pinocchio::LOCAL_WORLD_ALIGNED,dJ_l);
     pinocchio::getJointJacobianTimeVariation(model_biped,data_biped,base_joint,pinocchio::LOCAL_WORLD_ALIGNED,dJ_base);
 
-    fe_l_pos=data_biped.oMi[l_ankle_joint].translation();
-    fe_l_rot=data_biped.oMi[l_ankle_joint].rotation();
+    fe_l_pos=data_biped.oMf[l_ankle_joint].translation();
+    fe_l_rot=data_biped.oMf[l_ankle_joint].rotation();
 
-    fe_r_pos=data_biped.oMi[r_ankle_joint].translation();
-    fe_r_rot=data_biped.oMi[r_ankle_joint].rotation();
+    fe_r_pos=data_biped.oMf[r_ankle_joint].translation();
+    fe_r_rot=data_biped.oMf[r_ankle_joint].rotation();
 
     base_pos=data_biped.oMi[base_joint].translation();
     base_rot=data_biped.oMi[base_joint].rotation();
@@ -148,11 +150,11 @@ void Pin_KinDyn::computeJ_dJ() {
     Eigen::VectorXd q_fixed;
     q_fixed=q.block(7,0,model_biped_fixed.nv,1);
     pinocchio::forwardKinematics(model_biped_fixed,data_biped_fixed,q_fixed);
-    pinocchio::updateGlobalPlacements(model_biped_fixed,data_biped_fixed);
-    fe_l_pos_body=data_biped_fixed.oMi[l_ankle_joint_fixed].translation();
-    fe_r_pos_body=data_biped_fixed.oMi[r_ankle_joint_fixed].translation();
-    fe_l_rot_body=data_biped_fixed.oMi[l_ankle_joint_fixed].rotation();
-    fe_r_rot_body=data_biped_fixed.oMi[r_ankle_joint_fixed].rotation();
+    pinocchio::updateFramePlacements(model_biped_fixed,data_biped_fixed);
+    fe_l_pos_body=data_biped_fixed.oMf[l_ankle_joint_fixed].translation();
+    fe_r_pos_body=data_biped_fixed.oMf[r_ankle_joint_fixed].translation();
+    fe_l_rot_body=data_biped_fixed.oMf[l_ankle_joint_fixed].rotation();
+    fe_r_rot_body=data_biped_fixed.oMf[r_ankle_joint_fixed].rotation();
 }
 
 Eigen::Quaterniond Pin_KinDyn::intQuat(const Eigen::Quaterniond &quat, const Eigen::Matrix<double, 3, 1> &w) {

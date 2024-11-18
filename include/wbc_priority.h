@@ -44,7 +44,7 @@ public:
     Eigen::Vector3d fe_l_pos_cur_W, fe_r_pos_cur_W;
     Eigen::Matrix3d fe_l_rot_cur_W, fe_r_rot_cur_W;
     Eigen::VectorXd q, dq, ddq;
-    Eigen::VectorXd Fr_ff;  // 12*1, [fe_L, fe_R]
+    Eigen::VectorXd Fr_ff;  // 6*1, [fe_L, fe_R]
     Eigen::VectorXd delta_ddq;
     Eigen::VectorXd delta_Fr;
     Eigen::VectorXd eigen_xOpt;

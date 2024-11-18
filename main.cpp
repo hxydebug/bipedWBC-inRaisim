@@ -138,10 +138,10 @@ int main(int argc, char* argv[]) {
 
       // get the final joint torque
       Eigen::VectorXd pos_des=kinDynSolver.integrateDIY(RobotState.q, RobotState.wbc_delta_q_final);
-      RobotState.motors_pos_des = eigen2std(pos_des.block(7,0, model_nv-6,1));
+      RobotState.motors_pos_des = eigen2std(pos_des.block(7,0, kinDynSolver.model_nv-6,1));
       RobotState.motors_vel_des = eigen2std(RobotState.wbc_dq_final);
       RobotState.motors_tor_des = eigen2std(RobotState.wbc_tauJointRes);
-      robot.step(RobotState.motors_tor_des,body_tau);
+      robot.step(RobotState.wbc_tauJointRes,body_tau);
     }
     else{
       robot.step(leg_tau,body_tau);

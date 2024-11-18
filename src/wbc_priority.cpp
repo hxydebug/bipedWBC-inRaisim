@@ -66,17 +66,17 @@ WBC_priority::WBC_priority(int model_nv_In, int QP_nvIn, int QP_ncIn, double miu
     kin_tasks_walk.buildPriority(taskOrder_walk);
 
     ///-------- stand ------------
-    kin_tasks_stand.addTask("static_Contact");
-    kin_tasks_stand.addTask("Pz");
-    kin_tasks_stand.addTask("CoMXY_HipRPY");
+    // kin_tasks_stand.addTask("static_Contact");
+    // kin_tasks_stand.addTask("Pz");
+    // kin_tasks_stand.addTask("CoMXY_HipRPY");
 
-    std::vector<std::string> taskOrder_stand;
+    // std::vector<std::string> taskOrder_stand;
 
-    taskOrder_stand.emplace_back("static_Contact");
-    taskOrder_stand.emplace_back("CoMXY_HipRPY");
-    taskOrder_stand.emplace_back("Pz");
+    // taskOrder_stand.emplace_back("static_Contact");
+    // taskOrder_stand.emplace_back("CoMXY_HipRPY");
+    // taskOrder_stand.emplace_back("Pz");
 
-    kin_tasks_stand.buildPriority(taskOrder_stand);
+    // kin_tasks_stand.buildPriority(taskOrder_stand);
 }
 
 void WBC_priority::dataBusRead(const DataBus &robotState) {
@@ -170,23 +170,28 @@ void WBC_priority::computeTau() {
     eigen_qp_A1.block<6, 6>(0, 0) = Sf * dyn_M * St_qpV1;
 
     eigen_qp_A1.block<6, 6>(0, 6) = -Sf * Jfe.transpose();
-
+    std::cout<< eigen_qp_A1.rows()<< "x" << eigen_qp_A1.cols() << std::endl;
+    std::cout<<"Sf"<< Sf.rows()<< "x" << Sf.cols() << std::endl;
+    std::cout<< dyn_M.rows()<< "x" << dyn_M.cols() << std::endl;
+    std::cout<< ddq_final_kin.rows()<< "x" << ddq_final_kin.cols() << std::endl;
+    std::cout<<"dyn_Non"<< dyn_Non.rows()<< "x" << dyn_Non.cols() << std::endl;
+    std::cout<< Jfe.rows()<< "x" << Jfe.cols() << std::endl;
+    std::cout<< Fr_ff.rows()<< "x" << Fr_ff.cols() << std::endl;
     Eigen::VectorXd eqRes = Eigen::VectorXd::Zero(6);
     eqRes = -Sf * dyn_M * ddq_final_kin - Sf * dyn_Non + Sf * Jfe.transpose() * Fr_ff;
+    std::cout<< eqRes.rows()<< "x" << eqRes.cols() << std::endl;
+    // only the plane foot or line foot need multiply the rot matrix
+    // Eigen::Matrix3d Rfe;
+    // Rfe = stance_fe_rot_cur_W;
 
-    Eigen::Matrix3d Rfe;
-    if (motionStateCur==DataBus::Stand){
-        Rfe = fe_l_rot_cur_W;
-    } else{
-        Rfe = stance_fe_rot_cur_W;
-    }
-
-    Eigen::Matrix<double,6,6> Mw2b;
-    Mw2b.setZero();
-    Mw2b.block(0,0,3,3)=Rfe.transpose();
-    Mw2b.block(3,3,3,3)=Rfe.transpose();
+    // Eigen::Matrix<double,6,6> Mw2b;
+    // Mw2b.setZero();
+    // Mw2b.block(0,0,3,3)=Rfe.transpose();
+    // Mw2b.block(3,3,3,3)=Rfe.transpose();
 
     Eigen::MatrixXd W = Eigen::MatrixXd::Zero(10, 6);
+    std::cout<< W << std::endl;
+    std::cout<< W.rows()<< "x" << W.cols() << std::endl;
     W(0, 0) = 1;
     W(0, 2) = miu;
     W(1, 0) = -1;
@@ -197,11 +202,11 @@ void WBC_priority::computeTau() {
     W(3, 2) = miu;
     W(4, 2) = 1;
     W.block<5, 3>(5, 3) = W.block<5, 3>(0, 0);
-    W=W*Mw2b;
-
+    // W=W*Mw2b;
+ std::cout<< W.rows()<< "x" << W.cols() << std::endl;
     Eigen::VectorXd f_low = Eigen::VectorXd::Zero(10);
     Eigen::VectorXd f_upp = Eigen::VectorXd::Zero(10);
-//    std::cout<<"wbc_computeTau, st_fe_rot"<<std::endl<<stance_fe_rot_cur_W<<std::endl;
+   std::cout<<"wbc_computeTau, st_fe_rot"<<std::endl<<stance_fe_rot_cur_W<<std::endl;
 
     f_upp.block<5, 1>(0, 0) << 1e10, 1e10, 1e10, 1e10, f_z_upp;
     f_upp.block<5, 1>(5, 0) = f_upp.block<5, 1>(0, 0);
@@ -229,7 +234,7 @@ void WBC_priority::computeTau() {
             f_low(3) = -1e-7;
         }
     }
-
+    std::cout<<"11"<<std::endl;
     Eigen::MatrixXd eigen_qp_A2 = Eigen::MatrixXd::Zero(10, 12);
     eigen_qp_A2.block<10, 6>(0, 6) = W;
     Eigen::VectorXd neqRes_low = Eigen::VectorXd::Zero(10);
@@ -372,61 +377,61 @@ void WBC_priority::computeDdq(Pin_KinDyn &pinKinDynIn) {
     }
 
     /// -------- stand -------------
-    {
+//     {
 
-        int id = kin_tasks_stand.getId("static_Contact");
-        kin_tasks_stand.taskLib[id].errX = Eigen::VectorXd::Zero(6);
-        kin_tasks_stand.taskLib[id].derrX = Eigen::VectorXd::Zero(6);
-        kin_tasks_stand.taskLib[id].ddxDes = Eigen::VectorXd::Zero(6);
-        kin_tasks_stand.taskLib[id].dxDes = Eigen::VectorXd::Zero(6);
-        kin_tasks_stand.taskLib[id].kp = Eigen::MatrixXd::Identity(6, 6) * 0;
-        kin_tasks_stand.taskLib[id].kd = Eigen::MatrixXd::Identity(6, 6) * 0;
-        kin_tasks_stand.taskLib[id].J=Eigen::MatrixXd::Zero(6,model_nv);
-        kin_tasks_stand.taskLib[id].J=Jfe;
-        kin_tasks_stand.taskLib[id].dJ = Eigen::MatrixXd::Zero(6,model_nv);
-        kin_tasks_stand.taskLib[id].W.diagonal() = Eigen::VectorXd::Ones(model_nv);
+//         int id = kin_tasks_stand.getId("static_Contact");
+//         kin_tasks_stand.taskLib[id].errX = Eigen::VectorXd::Zero(6);
+//         kin_tasks_stand.taskLib[id].derrX = Eigen::VectorXd::Zero(6);
+//         kin_tasks_stand.taskLib[id].ddxDes = Eigen::VectorXd::Zero(6);
+//         kin_tasks_stand.taskLib[id].dxDes = Eigen::VectorXd::Zero(6);
+//         kin_tasks_stand.taskLib[id].kp = Eigen::MatrixXd::Identity(6, 6) * 0;
+//         kin_tasks_stand.taskLib[id].kd = Eigen::MatrixXd::Identity(6, 6) * 0;
+//         kin_tasks_stand.taskLib[id].J=Eigen::MatrixXd::Zero(6,model_nv);
+//         kin_tasks_stand.taskLib[id].J=Jfe;
+//         kin_tasks_stand.taskLib[id].dJ = Eigen::MatrixXd::Zero(6,model_nv);
+//         kin_tasks_stand.taskLib[id].W.diagonal() = Eigen::VectorXd::Ones(model_nv);
 
-        id = kin_tasks_stand.getId("Pz");
-        kin_tasks_stand.taskLib[id].errX = Eigen::VectorXd::Zero(1);
-        kin_tasks_stand.taskLib[id].errX(0) = base_pos_des(2) - q(2);
-        kin_tasks_stand.taskLib[id].derrX = Eigen::VectorXd::Zero(1);
-        kin_tasks_stand.taskLib[id].ddxDes = Eigen::VectorXd::Zero(1);
-        kin_tasks_stand.taskLib[id].dxDes = Eigen::VectorXd::Zero(1);
-        kin_tasks_stand.taskLib[id].kp = Eigen::MatrixXd::Identity(1, 1) * 2000; //100
-        kin_tasks_stand.taskLib[id].kd = Eigen::MatrixXd::Identity(1, 1) * 10;
-        Eigen::MatrixXd taskMap = Eigen::MatrixXd::Zero(1, 6);
-        taskMap(0, 2) = 1;
-        kin_tasks_stand.taskLib[id].J = taskMap * J_base;
-        kin_tasks_stand.taskLib[id].dJ = taskMap * dJ_base;
-        kin_tasks_stand.taskLib[id].W.diagonal() = Eigen::VectorXd::Ones(model_nv);
+//         id = kin_tasks_stand.getId("Pz");
+//         kin_tasks_stand.taskLib[id].errX = Eigen::VectorXd::Zero(1);
+//         kin_tasks_stand.taskLib[id].errX(0) = base_pos_des(2) - q(2);
+//         kin_tasks_stand.taskLib[id].derrX = Eigen::VectorXd::Zero(1);
+//         kin_tasks_stand.taskLib[id].ddxDes = Eigen::VectorXd::Zero(1);
+//         kin_tasks_stand.taskLib[id].dxDes = Eigen::VectorXd::Zero(1);
+//         kin_tasks_stand.taskLib[id].kp = Eigen::MatrixXd::Identity(1, 1) * 2000; //100
+//         kin_tasks_stand.taskLib[id].kd = Eigen::MatrixXd::Identity(1, 1) * 10;
+//         Eigen::MatrixXd taskMap = Eigen::MatrixXd::Zero(1, 6);
+//         taskMap(0, 2) = 1;
+//         kin_tasks_stand.taskLib[id].J = taskMap * J_base;
+//         kin_tasks_stand.taskLib[id].dJ = taskMap * dJ_base;
+//         kin_tasks_stand.taskLib[id].W.diagonal() = Eigen::VectorXd::Ones(model_nv);
 
-        id = kin_tasks_stand.getId("CoMXY_HipRPY");
-        Eigen::MatrixXd taskMapRPY = Eigen::MatrixXd::Zero(3, 6);
-        taskMapRPY(0, 3) = 1;
-        taskMapRPY(1, 4) = 1;
-        taskMapRPY(2, 5) = 1;
-        kin_tasks_stand.taskLib[id].errX = Eigen::VectorXd::Zero(5);
-        kin_tasks_stand.taskLib[id].errX.block(0,0,2,1) = pCoMDes.block(0,0,2,1)-pCoMCur.block(0,0,2,1);
-//            kin_tasks_stand.taskLib[id].errX[0]+=0.01;
-        Eigen::Matrix3d desRot = eul2Rot(base_rpy_des(0), base_rpy_des(1), base_rpy_des(2));
-        kin_tasks_stand.taskLib[id].errX.block<3, 1>(2, 0) = diffRot(hip_link_rot, desRot);
-        kin_tasks_stand.taskLib[id].derrX = Eigen::VectorXd::Zero(5);
-//            kin_tasks_stand.taskLib[id].derrX.block(0,0,2,1)=-(Jcom*dq).block(0,0,2,1);
-//            kin_tasks_stand.taskLib[id].derrX.block(2,0,3,1)=-taskMapRPY*J_hip_link*dq;
-        kin_tasks_stand.taskLib[id].ddxDes = Eigen::VectorXd::Zero(5);
-        kin_tasks_stand.taskLib[id].dxDes = Eigen::VectorXd::Zero(5);
-        kin_tasks_stand.taskLib[id].kp = Eigen::MatrixXd::Identity(5, 5) * 1000; //100
-        kin_tasks_stand.taskLib[id].kd = Eigen::MatrixXd::Identity(5, 5) * 10;
-        kin_tasks_stand.taskLib[id].kp.block(2,2,3,3) = Eigen::MatrixXd::Identity(3, 3) * 1000; //100 // for hip rpy
-        kin_tasks_stand.taskLib[id].kd.block(2,2,3,3) = Eigen::MatrixXd::Identity(3, 3) * 10; //100  // for hip rpy
-        kin_tasks_stand.taskLib[id].J = Eigen::MatrixXd::Zero(5,model_nv);
-        kin_tasks_stand.taskLib[id].J.block(0,0,2,model_nv) = Jcom.block(0,0,2,model_nv);
-        kin_tasks_stand.taskLib[id].J.block(2,0,3,model_nv) = taskMapRPY * J_hip_link;
-        //kin_tasks_stand.taskLib[id].J.block(0,6,2,14).setZero();
-        kin_tasks_stand.taskLib[id].dJ = Eigen::MatrixXd::Zero(5,model_nv);
-        kin_tasks_stand.taskLib[id].W.diagonal() = Eigen::VectorXd::Ones(model_nv);
+//         id = kin_tasks_stand.getId("CoMXY_HipRPY");
+//         Eigen::MatrixXd taskMapRPY = Eigen::MatrixXd::Zero(3, 6);
+//         taskMapRPY(0, 3) = 1;
+//         taskMapRPY(1, 4) = 1;
+//         taskMapRPY(2, 5) = 1;
+//         kin_tasks_stand.taskLib[id].errX = Eigen::VectorXd::Zero(5);
+//         kin_tasks_stand.taskLib[id].errX.block(0,0,2,1) = pCoMDes.block(0,0,2,1)-pCoMCur.block(0,0,2,1);
+// //            kin_tasks_stand.taskLib[id].errX[0]+=0.01;
+//         Eigen::Matrix3d desRot = eul2Rot(base_rpy_des(0), base_rpy_des(1), base_rpy_des(2));
+//         kin_tasks_stand.taskLib[id].errX.block<3, 1>(2, 0) = diffRot(hip_link_rot, desRot);
+//         kin_tasks_stand.taskLib[id].derrX = Eigen::VectorXd::Zero(5);
+// //            kin_tasks_stand.taskLib[id].derrX.block(0,0,2,1)=-(Jcom*dq).block(0,0,2,1);
+// //            kin_tasks_stand.taskLib[id].derrX.block(2,0,3,1)=-taskMapRPY*J_hip_link*dq;
+//         kin_tasks_stand.taskLib[id].ddxDes = Eigen::VectorXd::Zero(5);
+//         kin_tasks_stand.taskLib[id].dxDes = Eigen::VectorXd::Zero(5);
+//         kin_tasks_stand.taskLib[id].kp = Eigen::MatrixXd::Identity(5, 5) * 1000; //100
+//         kin_tasks_stand.taskLib[id].kd = Eigen::MatrixXd::Identity(5, 5) * 10;
+//         kin_tasks_stand.taskLib[id].kp.block(2,2,3,3) = Eigen::MatrixXd::Identity(3, 3) * 1000; //100 // for hip rpy
+//         kin_tasks_stand.taskLib[id].kd.block(2,2,3,3) = Eigen::MatrixXd::Identity(3, 3) * 10; //100  // for hip rpy
+//         kin_tasks_stand.taskLib[id].J = Eigen::MatrixXd::Zero(5,model_nv);
+//         kin_tasks_stand.taskLib[id].J.block(0,0,2,model_nv) = Jcom.block(0,0,2,model_nv);
+//         kin_tasks_stand.taskLib[id].J.block(2,0,3,model_nv) = taskMapRPY * J_hip_link;
+//         //kin_tasks_stand.taskLib[id].J.block(0,6,2,14).setZero();
+//         kin_tasks_stand.taskLib[id].dJ = Eigen::MatrixXd::Zero(5,model_nv);
+//         kin_tasks_stand.taskLib[id].W.diagonal() = Eigen::VectorXd::Ones(model_nv);
 
-    }
+//     }
 
     if (motionStateCur==DataBus::Walk || motionStateCur==DataBus::Walk2Stand) {
         kin_tasks_walk.computeAll(des_delta_q, des_dq, des_ddq, dyn_M, dyn_M_inv, dq);
@@ -434,12 +439,12 @@ void WBC_priority::computeDdq(Pin_KinDyn &pinKinDynIn) {
         dq_final_kin = kin_tasks_walk.out_dq;
         ddq_final_kin = kin_tasks_walk.out_ddq;
     }
-    else if (motionStateCur==DataBus::Stand) {
-        kin_tasks_stand.computeAll(des_delta_q, des_dq, des_ddq, dyn_M, dyn_M_inv, dq);
-        delta_q_final_kin = kin_tasks_stand.out_delta_q;
-        dq_final_kin = kin_tasks_stand.out_dq;
-        ddq_final_kin = kin_tasks_stand.out_ddq;
-    } else
+    // else if (motionStateCur==DataBus::Stand) {
+    //     kin_tasks_stand.computeAll(des_delta_q, des_dq, des_ddq, dyn_M, dyn_M_inv, dq);
+    //     delta_q_final_kin = kin_tasks_stand.out_delta_q;
+    //     dq_final_kin = kin_tasks_stand.out_dq;
+    //     ddq_final_kin = kin_tasks_stand.out_ddq;
+    else
     {
         delta_q_final_kin = Eigen::VectorXd::Zero(model_nv);
         dq_final_kin = Eigen::VectorXd::Zero(model_nv);

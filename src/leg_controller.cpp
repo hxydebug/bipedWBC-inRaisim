@@ -200,10 +200,21 @@ Eigen::VectorXd leg_controller::get_action(int Run_mode,Eigen::VectorXd user_cmd
 }
 
 void leg_controller::dataBusWrite(DataBus &robotState){
-  robotState.legState=gait_generate->leg_state[1];
-  robotState.swing_fe_pos_des_W = swctr->foot_position_now;
-  RobotState.Fr_ff = Eigen::VectorXd::Zero(6);
-  RobotState.Fr_ff = stctr->GRF;
+  if(gait_generate->leg_state[1] == 0){
+    robotState.legState = DataBus::LegState::LSt;
+    robotState.swing_fe_pos_des_W = swctr->foot_position_now[1];
+    robotState.stance_fe_pos_cur_W=robotState.fe_l_pos_W;
+    robotState.stance_fe_rot_cur_W=robotState.fe_l_rot_W;
+  } 
+  else {
+    robotState.legState = DataBus::LegState::RSt;
+    robotState.swing_fe_pos_des_W = swctr->foot_position_now[0];
+    robotState.stance_fe_pos_cur_W=robotState.fe_r_pos_W;
+    robotState.stance_fe_rot_cur_W=robotState.fe_r_rot_W;
+  }
+  
+  robotState.Fr_ff = Eigen::VectorXd::Zero(6);
+  robotState.Fr_ff = stctr->GRF;
 
 
 }

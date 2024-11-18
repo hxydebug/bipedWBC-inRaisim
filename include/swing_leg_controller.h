@@ -15,7 +15,7 @@ public:
     Eigen::VectorXd tau(Eigen::VectorXd pA,Eigen::VectorXd vA,Eigen::VectorXd pT,Eigen::VectorXd vT);
     Position postarget[2];
     float desired_xspeed;
-    Eigen::Vector3d foot_position_now;
+    Eigen::Vector3d foot_position_now[2];
 private:
     Eigen::VectorXd pGain,dGain;
     gait_generator *_gait_generator;

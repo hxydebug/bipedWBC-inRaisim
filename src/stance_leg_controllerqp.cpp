@@ -88,7 +88,7 @@ stance_leg_controller::stance_leg_controller(robot *bike,gait_generator *gait_ge
   y_com_desire = 0;
   yaw_com_desire = 0;
   I_error.setZero();
-  GRF..resize(6);
+  GRF.resize(6);
 }
 
 Eigen::VectorXd stance_leg_controller::get_act(void){

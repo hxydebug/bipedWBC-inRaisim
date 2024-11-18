@@ -37,7 +37,6 @@ swing_leg_controller::swing_leg_controller(robot *bike,gait_generator *gait_gene
   action.setConstant(0);
   bias_positions[0] << 0.001,wid/2+0.03,0;
   bias_positions[1] << 0.001,-wid/2-0.03,0;
-
   swing_leg_controller::set_PDGain();
 
 }
@@ -136,10 +135,10 @@ Eigen::VectorXd swing_leg_controller::get_action(Eigen::VectorXd user_cmd){
       foot_target_position[2] = 0;
       // std::cout<< _gait_generator->normalized_phase[i] <<std::endl;
       // get beginning foot position in world frame
-      foot_position_now = get_swing_foot_trajectory(_gait_generator->normalized_phase[i],foot_position_begin,foot_target_position);
+      foot_position_now[i] = get_swing_foot_trajectory(_gait_generator->normalized_phase[i],foot_position_begin,foot_target_position);
 
       // from world to body frame
-      Eigen::Vector3d foot_position = com_rotm.transpose() * (foot_position_now-p_com);
+      Eigen::Vector3d foot_position = com_rotm.transpose() * (foot_position_now[i]-p_com);
       postarget[i].x = foot_position[0];
       postarget[i].y = foot_position[1];
       postarget[i].z = foot_position[2];
