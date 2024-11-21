@@ -170,16 +170,16 @@ void WBC_priority::computeTau() {
     eigen_qp_A1.block<6, 6>(0, 0) = Sf * dyn_M * St_qpV1;
 
     eigen_qp_A1.block<6, 6>(0, 6) = -Sf * Jfe.transpose();
-    std::cout<< eigen_qp_A1.rows()<< "x" << eigen_qp_A1.cols() << std::endl;
-    std::cout<<"Sf"<< Sf.rows()<< "x" << Sf.cols() << std::endl;
-    std::cout<< dyn_M.rows()<< "x" << dyn_M.cols() << std::endl;
-    std::cout<< ddq_final_kin.rows()<< "x" << ddq_final_kin.cols() << std::endl;
-    std::cout<<"dyn_Non"<< dyn_Non.rows()<< "x" << dyn_Non.cols() << std::endl;
-    std::cout<< Jfe.rows()<< "x" << Jfe.cols() << std::endl;
-    std::cout<< Fr_ff.rows()<< "x" << Fr_ff.cols() << std::endl;
+    // std::cout<< eigen_qp_A1.rows()<< "x" << eigen_qp_A1.cols() << std::endl;
+    // std::cout<<"Sf"<< Sf.rows()<< "x" << Sf.cols() << std::endl;
+    // std::cout<< dyn_M.rows()<< "x" << dyn_M.cols() << std::endl;
+    // std::cout<< ddq_final_kin.rows()<< "x" << ddq_final_kin.cols() << std::endl;
+    // std::cout<<"dyn_Non"<< dyn_Non.rows()<< "x" << dyn_Non.cols() << std::endl;
+    // std::cout<< Jfe.rows()<< "x" << Jfe.cols() << std::endl;
+    // std::cout<< Fr_ff.rows()<< "x" << Fr_ff.cols() << std::endl;
     Eigen::VectorXd eqRes = Eigen::VectorXd::Zero(6);
     eqRes = -Sf * dyn_M * ddq_final_kin - Sf * dyn_Non + Sf * Jfe.transpose() * Fr_ff;
-    std::cout<< eqRes.rows()<< "x" << eqRes.cols() << std::endl;
+    // std::cout<< eqRes.rows()<< "x" << eqRes.cols() << std::endl;
     // only the plane foot or line foot need multiply the rot matrix
     // Eigen::Matrix3d Rfe;
     // Rfe = stance_fe_rot_cur_W;
@@ -190,8 +190,8 @@ void WBC_priority::computeTau() {
     // Mw2b.block(3,3,3,3)=Rfe.transpose();
 
     Eigen::MatrixXd W = Eigen::MatrixXd::Zero(10, 6);
-    std::cout<< W << std::endl;
-    std::cout<< W.rows()<< "x" << W.cols() << std::endl;
+    // std::cout<< W << std::endl;
+    // std::cout<< W.rows()<< "x" << W.cols() << std::endl;
     W(0, 0) = 1;
     W(0, 2) = miu;
     W(1, 0) = -1;
@@ -203,10 +203,10 @@ void WBC_priority::computeTau() {
     W(4, 2) = 1;
     W.block<5, 3>(5, 3) = W.block<5, 3>(0, 0);
     // W=W*Mw2b;
- std::cout<< W.rows()<< "x" << W.cols() << std::endl;
+//  std::cout<< W.rows()<< "x" << W.cols() << std::endl;
     Eigen::VectorXd f_low = Eigen::VectorXd::Zero(10);
     Eigen::VectorXd f_upp = Eigen::VectorXd::Zero(10);
-   std::cout<<"wbc_computeTau, st_fe_rot"<<std::endl<<stance_fe_rot_cur_W<<std::endl;
+//    std::cout<<"wbc_computeTau, st_fe_rot"<<std::endl<<stance_fe_rot_cur_W<<std::endl;
 
     f_upp.block<5, 1>(0, 0) << 1e10, 1e10, 1e10, 1e10, f_z_upp;
     f_upp.block<5, 1>(5, 0) = f_upp.block<5, 1>(0, 0);
@@ -234,7 +234,7 @@ void WBC_priority::computeTau() {
             f_low(3) = -1e-7;
         }
     }
-    std::cout<<"11"<<std::endl;
+    // std::cout<<"11"<<std::endl;
     Eigen::MatrixXd eigen_qp_A2 = Eigen::MatrixXd::Zero(10, 12);
     eigen_qp_A2.block<10, 6>(0, 6) = W;
     Eigen::VectorXd neqRes_low = Eigen::VectorXd::Zero(10);

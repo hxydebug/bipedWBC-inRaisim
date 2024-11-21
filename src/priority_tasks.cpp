@@ -80,7 +80,7 @@ void PriorityTasks::computeAll(const Eigen::VectorXd &des_delta_q,const Eigen::V
             taskLib[curId].dq=des_dq;
             Eigen::VectorXd ddxcmd= taskLib[curId].ddxDes + taskLib[curId].kp * taskLib[curId].errX+taskLib[curId].kd*taskLib[curId].derrX;
             taskLib[curId].ddq= des_ddq + dyn_pseudoInv(taskLib[curId].Jpre,dyn_M_inv,true) * (ddxcmd - taskLib[curId].dJ * dq);
-//            std::cout<<taskLib[curId].taskName<<std::endl<<taskLib[curId].delta_q.transpose()<<std::endl;
+        //    std::cout<<taskLib[curId].taskName<<std::endl<<taskLib[curId].delta_q.transpose()<<std::endl;
         }
         else{
             taskLib[curId].N=taskLib[parentId].N*
@@ -93,11 +93,11 @@ void PriorityTasks::computeAll(const Eigen::VectorXd &des_delta_q,const Eigen::V
             Eigen::VectorXd ddxcmd= taskLib[curId].ddxDes + taskLib[curId].kp * taskLib[curId].errX+taskLib[curId].kd*taskLib[curId].derrX;
             taskLib[curId].ddq= taskLib[parentId].ddq + dyn_pseudoInv(taskLib[curId].Jpre,dyn_M_inv,true) *
                                                         (ddxcmd-taskLib[curId].dJ*dq-taskLib[curId].J*taskLib[parentId].ddq);
-//            std::cout<<taskLib[curId].taskName<<std::endl<<taskLib[curId].delta_q.transpose()<<std::endl;
+        //    std::cout<<taskLib[curId].taskName<<std::endl<<taskLib[curId].delta_q.transpose()<<std::endl;
         }
-//        printf("task: %s\n", taskLib[curId].taskName.c_str());
-//        Eigen::FullPivLU<Eigen::MatrixXd> lu_decomp(taskLib[curId].Jpre);
-//        printf("taskJacobian rank: %d, rows: %d\n", lu_decomp.rank(), taskLib[curId].Jpre.rows());
+    //    printf("task: %s\n", taskLib[curId].taskName.c_str());
+    //    Eigen::FullPivLU<Eigen::MatrixXd> lu_decomp(taskLib[curId].Jpre);
+    //    printf("taskJacobian rank: %d, rows: %d\n", lu_decomp.rank(), taskLib[curId].Jpre.rows());
         if (childId!=-1){
             parentId=curId;
             curId=childId;

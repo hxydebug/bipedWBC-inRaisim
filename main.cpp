@@ -71,7 +71,7 @@ int main(int argc, char* argv[]) {
   Eigen::VectorXd user_cmd(4);
   float global_timer = 0;
 
-  user_cmd<< -0.2,0.0,0.45,0;   //vx,vy,height,dyaw
+  user_cmd<< 0.0,0.0,0.45,0;   //vx,vy,height,dyaw
   double x_com_desire=0.0;
   double y_com_desire=0.0;
   
@@ -138,10 +138,18 @@ int main(int argc, char* argv[]) {
 
       // get the final joint torque
       Eigen::VectorXd pos_des=kinDynSolver.integrateDIY(RobotState.q, RobotState.wbc_delta_q_final);
-      RobotState.motors_pos_des = eigen2std(pos_des.block(7,0, kinDynSolver.model_nv-6,1));
-      RobotState.motors_vel_des = eigen2std(RobotState.wbc_dq_final);
-      RobotState.motors_tor_des = eigen2std(RobotState.wbc_tauJointRes);
-      robot.step(RobotState.wbc_tauJointRes,body_tau);
+      RobotState.motors_posDes = pos_des.block(7,0, kinDynSolver.model_nv-6,1);
+      RobotState.motors_velDes = RobotState.wbc_dq_final.tail(6);
+      // RobotState.motors_velDes = Eigen::VectorXd::Zero(6);
+      RobotState.motors_torDes = RobotState.wbc_tauJointRes;
+      // cout<<RobotState.motors_posDes<<endl;
+      // cout<<RobotState.motors_velDes<<endl;
+      // cout<<RobotState.pBase_W<<endl;
+      cout<<global_timer<<endl;
+      // cout<<RobotState.q(0)<<" "<<RobotState.q(1)<<" "<<RobotState.q(2)<<endl;
+      Eigen::VectorXd leg_tau1 = l_control.final_tau(RobotState);
+      // cout<<leg_tau1<<endl;
+      robot.step(leg_tau1,body_tau);
     }
     else{
       robot.step(leg_tau,body_tau);

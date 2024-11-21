@@ -34,6 +34,7 @@ struct DataBus{
     std::vector<double> motors_vel_des;
     std::vector<double> motors_tor_des;
     std::vector<double> motors_tor_out;
+    Eigen::VectorXd motors_posDes, motors_velDes, motors_torDes;
 
     // states and key variables
     Eigen::VectorXd q, dq, ddq;
@@ -41,7 +42,7 @@ struct DataBus{
     Eigen::MatrixXd J_base, J_l, J_r, J_hd_l, J_hd_r, J_hip_link;
     Eigen::MatrixXd dJ_base, dJ_l, dJ_r, dJ_hd_l, dJ_hd_r;
     Eigen::MatrixXd Jcom_W; // jacobian of CoM, in world frame
-    Eigen::Vector3d pCoM_W;
+    Eigen::Vector3d pCoM_W, pBase_W;
     Eigen::Vector3d fe_r_pos_W, fe_l_pos_W, base_pos;
     Eigen::Matrix3d fe_r_rot_W, fe_l_rot_W, base_rot; // in world frame
     Eigen::Vector3d fe_r_pos_L, fe_l_pos_L; // in Body frame

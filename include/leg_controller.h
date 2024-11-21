@@ -18,6 +18,7 @@ public:
 	void set_PDGain();
 	Eigen::VectorXd tau(Eigen::VectorXd pA,Eigen::VectorXd vA,Eigen::VectorXd pT,Eigen::VectorXd vT);
 	Eigen::VectorXd get_action(int Run_mode,Eigen::VectorXd user_cmd);
+	Eigen::VectorXd final_tau(DataBus &robotState);
 	void create_gait(void);
 	void goto_xyz(float xx,float yy,float zz,Leg leg);
 	void dataBusWrite(DataBus &robotState);

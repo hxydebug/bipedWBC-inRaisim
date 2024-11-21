@@ -37,7 +37,7 @@
     <child link="base"/>
   </joint> -->
 
-  <link name="base">
+  <!-- <link name="base">
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
@@ -50,7 +50,7 @@
     <origin rpy="0 0 0" xyz="0 0 0"/>
     <parent link="base"/>
     <child link="trunk"/>
-  </joint>
+  </joint> -->
 
   <link name="trunk">
     <visual>

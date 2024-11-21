@@ -218,6 +218,22 @@ void leg_controller::dataBusWrite(DataBus &robotState){
 
 
 }
+
+Eigen::VectorXd leg_controller::final_tau(DataBus &robotState){
+  pGain << 1000.0, 1000.0, 1000.0, 1000.0, 1000.0, 1000.0;
+  dGain << 50.0, 50.0, 50.0, 50.0, 50.0, 50.0;
+  // pGain.setConstant(1000.0);
+	// dGain.setConstant(10.0);
+
+  Eigen::VectorXd Tau = leg_controller::tau(biped_robot->get_leg_pos(),biped_robot->get_leg_vel(),robotState.motors_posDes,robotState.motors_velDes);
+  Tau += robotState.motors_torDes;
+  for(int i(0);i<6;i++){
+    if(Tau[i] < -48.0) Tau[i] = -48.0;
+    if(Tau[i] > 48.0) Tau[i] = 48.0;
+	}
+
+  return Tau;
+}
 Eigen::VectorXd leg_controller::tau(Eigen::VectorXd pA,Eigen::VectorXd vA,Eigen::VectorXd pT,Eigen::VectorXd vT){
   
   return dGain.cwiseProduct(vT-vA) + pGain.cwiseProduct(pT-pA);

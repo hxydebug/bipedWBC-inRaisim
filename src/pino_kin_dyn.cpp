@@ -40,7 +40,7 @@ Pin_KinDyn::Pin_KinDyn(std::string urdf_pathIn) {
     l_ankle_joint=model_biped.getFrameId("FL_foot");
     r_ankle_joint_fixed=model_biped_fixed.getFrameId("FR_foot");
     l_ankle_joint_fixed=model_biped_fixed.getFrameId("FL_foot");
-    base_joint=model_biped.getJointId("root_joint");
+    base_joint=model_biped.getFrameId("imu_link");
 
     // read json file
     // Json::Reader reader;
@@ -99,6 +99,7 @@ void Pin_KinDyn::dataBusWrite(DataBus &robotState) {
     robotState.dyn_Non=dyn_Non;
 
     robotState.pCoM_W=CoM_pos;
+    robotState.pBase_W=base_pos;
     robotState.Jcom_W=Jcom;
 
     robotState.inertia = inertia;  // w.r.t body frame
@@ -112,16 +113,16 @@ void Pin_KinDyn::computeJ_dJ() {
     pinocchio::jacobianCenterOfMass(model_biped, data_biped, q, true);
     pinocchio::computeJointJacobians(model_biped,data_biped,q);
     pinocchio::computeJointJacobiansTimeVariation(model_biped,data_biped,q,dq);
-    pinocchio::updateGlobalPlacements(model_biped,data_biped);
+    // pinocchio::updateGlobalPlacements(model_biped,data_biped);
     pinocchio::updateFramePlacements(model_biped,data_biped);
 
     pinocchio::getFrameJacobian(model_biped,data_biped,r_ankle_joint,pinocchio::LOCAL_WORLD_ALIGNED,J_r);
     pinocchio::getFrameJacobian(model_biped,data_biped,l_ankle_joint,pinocchio::LOCAL_WORLD_ALIGNED,J_l);
-    pinocchio::getJointJacobian(model_biped,data_biped,base_joint,pinocchio::LOCAL_WORLD_ALIGNED,J_base);
+    pinocchio::getFrameJacobian(model_biped,data_biped,base_joint,pinocchio::LOCAL_WORLD_ALIGNED,J_base);
 
     pinocchio::getFrameJacobianTimeVariation(model_biped,data_biped,r_ankle_joint,pinocchio::LOCAL_WORLD_ALIGNED,dJ_r);
     pinocchio::getFrameJacobianTimeVariation(model_biped,data_biped,l_ankle_joint,pinocchio::LOCAL_WORLD_ALIGNED,dJ_l);
-    pinocchio::getJointJacobianTimeVariation(model_biped,data_biped,base_joint,pinocchio::LOCAL_WORLD_ALIGNED,dJ_base);
+    pinocchio::getFrameJacobianTimeVariation(model_biped,data_biped,base_joint,pinocchio::LOCAL_WORLD_ALIGNED,dJ_base);
 
     fe_l_pos=data_biped.oMf[l_ankle_joint].translation();
     fe_l_rot=data_biped.oMf[l_ankle_joint].rotation();
@@ -129,8 +130,8 @@ void Pin_KinDyn::computeJ_dJ() {
     fe_r_pos=data_biped.oMf[r_ankle_joint].translation();
     fe_r_rot=data_biped.oMf[r_ankle_joint].rotation();
 
-    base_pos=data_biped.oMi[base_joint].translation();
-    base_rot=data_biped.oMi[base_joint].rotation();
+    base_pos=data_biped.oMf[base_joint].translation();
+    base_rot=data_biped.oMf[base_joint].rotation();
 
     Jcom=data_biped.Jcom;
 /************* focus on ************** */
