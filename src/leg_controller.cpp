@@ -200,33 +200,56 @@ Eigen::VectorXd leg_controller::get_action(int Run_mode,Eigen::VectorXd user_cmd
 }
 
 void leg_controller::dataBusWrite(DataBus &robotState){
+  robotState.Fr_ff = Eigen::VectorXd::Zero(6);
   if(gait_generate->leg_state[1] == 0){
     robotState.legState = DataBus::LegState::LSt;
     robotState.swing_fe_pos_des_W = swctr->foot_position_now[1];
     robotState.stance_fe_pos_cur_W=robotState.fe_l_pos_W;
     robotState.stance_fe_rot_cur_W=robotState.fe_l_rot_W;
+    // robotState.Fr_ff[2] = 103;
   } 
   else {
     robotState.legState = DataBus::LegState::RSt;
     robotState.swing_fe_pos_des_W = swctr->foot_position_now[0];
     robotState.stance_fe_pos_cur_W=robotState.fe_r_pos_W;
     robotState.stance_fe_rot_cur_W=robotState.fe_r_rot_W;
+    // robotState.Fr_ff[5] = 103;
   }
   
-  robotState.Fr_ff = Eigen::VectorXd::Zero(6);
+  
   robotState.Fr_ff = stctr->GRF;
 
 
 }
 
 Eigen::VectorXd leg_controller::final_tau(DataBus &robotState){
-  pGain << 1000.0, 1000.0, 1000.0, 1000.0, 1000.0, 1000.0;
-  dGain << 50.0, 50.0, 50.0, 50.0, 50.0, 50.0;
-  // pGain.setConstant(1000.0);
-	// dGain.setConstant(10.0);
+  // pGain << 1000.0, 1000.0, 1000.0, 1000.0, 1000.0, 1000.0;
+  // dGain << 50.0, 50.0, 50.0, 50.0, 50.0, 50.0;
+  pGain.setConstant(180.0);
+	dGain.setConstant(2.0);
 
-  Eigen::VectorXd Tau = leg_controller::tau(biped_robot->get_leg_pos(),biped_robot->get_leg_vel(),robotState.motors_posDes,robotState.motors_velDes);
-  Tau += robotState.motors_torDes;
+  // Eigen::VectorXd Tau = leg_controller::tau(biped_robot->get_leg_pos(),biped_robot->get_leg_vel(),robotState.motors_posDes,robotState.motors_velDes);
+  // // assign swing and stance foot
+  // Eigen::VectorXd ltau(3),rtau(3);
+  // if(gait_generate->leg_state[0]==stance_leg || gait_generate->leg_state[0]==Early_Contact){
+  //   ltau = swc_tau.head(3)+stc_tau.head(3);
+  //   // ltau <<0,0,0;
+  // }
+  // else{
+  //   ltau = swc_tau.head(3);
+  //   // ltau <<0,0,0;
+  // }
+  // if(gait_generate->leg_state[1]==stance_leg || gait_generate->leg_state[1]==Early_Contact){
+  //   rtau = swc_tau.tail(3)+stc_tau.tail(3);
+  //   // rtau <<0,0,0;
+  // }
+  // else{
+  //   rtau = swc_tau.tail(3);
+  //   // rtau <<0,0,0;
+  // }
+
+  Eigen::VectorXd Tau = swc_tau + robotState.motors_torDes;
+  // Tau += robotState.motors_torDes;
   for(int i(0);i<6;i++){
     if(Tau[i] < -48.0) Tau[i] = -48.0;
     if(Tau[i] > 48.0) Tau[i] = 48.0;

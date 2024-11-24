@@ -103,8 +103,13 @@ Eigen::VectorXd stance_leg_controller::get_action(Eigen::VectorXd user_cmd){
     Eigen::Vector3d p_com_des,w_com_des,dp_com_des,dw_com_des;
     p_com_des<<0,0,user_cmd[2];//0.41~0.42
     dp_com_des<<user_cmd[0],user_cmd[1],0;
-    w_com_des<<0,0,0;
     dw_com_des<<0,0,user_cmd[3];
+    // yaw_com_desire += dw_com_des[2] * 0.001;
+    w_com_des<<0,0,yaw_com_desire;
+
+    // x_com_desire +=  dp_com_des[0] * 0.001;
+    // y_com_desire +=  dp_com_des[1] * 0.001;
+    p_com_des<<x_com_desire,y_com_desire,user_cmd[2];
     Eigen::VectorXd des_state(12);
     des_state << w_com_des[0], w_com_des[1], w_com_des[2],
                 p_com_des[0], p_com_des[1], p_com_des[2], 

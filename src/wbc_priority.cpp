@@ -32,7 +32,7 @@ WBC_priority::WBC_priority(int model_nv_In, int QP_nvIn, int QP_ncIn, double miu
     St_qpV1.block<6, 6>(0, 0) = Eigen::MatrixXd::Identity(6, 6);
 
     // defined in body frame
-    f_z_low = 10;
+    f_z_low = 0;
     f_z_upp = 1400;
 
     qpOASES::Options options;
@@ -60,8 +60,9 @@ WBC_priority::WBC_priority(int model_nv_In, int QP_nvIn, int QP_ncIn, double miu
 
     std::vector<std::string> taskOrder_walk;
     taskOrder_walk.emplace_back("static_Contact");
-    taskOrder_walk.emplace_back("PosRot");
     taskOrder_walk.emplace_back("SwingLeg");
+    taskOrder_walk.emplace_back("PosRot");
+    // taskOrder_walk.emplace_back("SwingLeg");
 
     kin_tasks_walk.buildPriority(taskOrder_walk);
 
@@ -303,6 +304,8 @@ void WBC_priority::computeTau() {
     eigen_ddq_Opt = ddq_final_kin;
     eigen_ddq_Opt.block<6, 1>(0, 0) += eigen_xOpt.block<6, 1>(0, 0);
     eigen_fr_Opt = Fr_ff + eigen_xOpt.block<6, 1>(6, 0);
+    // std::cout<<"eigen_fr_Opt: "<<eigen_fr_Opt.transpose()<<std::endl;
+    // std::cout<<"deltafr: "<<eigen_xOpt.block<6, 1>(6, 0).transpose()<<std::endl;
 
     if (qpStatus != 0){
         Eigen::MatrixXd A_x;
@@ -343,19 +346,26 @@ void WBC_priority::computeDdq(Pin_KinDyn &pinKinDynIn) {
         id = kin_tasks_walk.getId("PosRot");
         kin_tasks_walk.taskLib[id].errX = Eigen::VectorXd::Zero(6);
         kin_tasks_walk.taskLib[id].errX.block(0,0,3,1) = base_pos_des - q.block(0,0,3,1);
+        // std::cout<< "desired height: "<<base_pos_des[2]<<std::endl;
+        // std::cout<< "current height: "<<q[2]<<std::endl;
         if (fabs(kin_tasks_walk.taskLib[id].errX(0))>=0.02)
             kin_tasks_walk.taskLib[id].errX(0)=0.02* sign(kin_tasks_walk.taskLib[id].errX(0));
         if (fabs(kin_tasks_walk.taskLib[id].errX(1))>=0.01)
             kin_tasks_walk.taskLib[id].errX(1)=0.01* sign(kin_tasks_walk.taskLib[id].errX(1));
+        // if (kin_tasks_walk.taskLib[id].errX(2)>0.005)
+        //     kin_tasks_walk.taskLib[id].errX(2)=0.005;
         Eigen::Matrix3d desRot = eul2Rot(base_rpy_des(0), base_rpy_des(1), base_rpy_des(2));
         kin_tasks_walk.taskLib[id].errX.block<3, 1>(3, 0) = diffRot(base_rot, desRot);
         kin_tasks_walk.taskLib[id].derrX = Eigen::VectorXd::Zero(6);
+        kin_tasks_walk.taskLib[id].derrX = des_dq.block(0,0,6,1) - dq.block(0,0,6,1);
         kin_tasks_walk.taskLib[id].ddxDes = Eigen::VectorXd::Zero(6);
         kin_tasks_walk.taskLib[id].dxDes = Eigen::VectorXd::Zero(6);
-        kin_tasks_walk.taskLib[id].kp = Eigen::MatrixXd::Identity(6, 6) * 10;
-        kin_tasks_walk.taskLib[id].kp.block(3,3,3,3)=Eigen::MatrixXd::Identity(3, 3) * 2000;
-        kin_tasks_walk.taskLib[id].kd = Eigen::MatrixXd::Identity(6, 6) * 2;
-        kin_tasks_walk.taskLib[id].kd.block(3,3,3,3)=Eigen::MatrixXd::Identity(3, 3) * 100;
+        kin_tasks_walk.taskLib[id].kp = Eigen::MatrixXd::Identity(6, 6) * 500;
+        // kin_tasks_walk.taskLib[id].kp.block(3,3,3,3)=Eigen::MatrixXd::Identity(3, 3) * 400;
+        // kin_tasks_walk.taskLib[id].kp.block<1, 1>(2, 2)=Eigen::MatrixXd::Identity(1, 1) * 2000;
+        kin_tasks_walk.taskLib[id].kd = Eigen::MatrixXd::Identity(6, 6) * 10;
+        // kin_tasks_walk.taskLib[id].kd.block(3,3,3,3)=Eigen::MatrixXd::Identity(3, 3) * 100;
+        // kin_tasks_walk.taskLib[id].kd.block<1, 1>(2, 2)=Eigen::MatrixXd::Identity(1, 1) * 100;
         kin_tasks_walk.taskLib[id].J = J_base;
         kin_tasks_walk.taskLib[id].dJ = dJ_base;
         kin_tasks_walk.taskLib[id].W.diagonal() = Eigen::VectorXd::Ones(model_nv);

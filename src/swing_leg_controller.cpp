@@ -100,10 +100,10 @@ Eigen::VectorXd swing_leg_controller::get_action(Eigen::VectorXd user_cmd){
   desired_height = user_cmd[2];
   _desired_height << 0,0,desired_height-foot_clearance;
   double feetR[2], feetInitAngle[2];
-  feetR[0] = wid/2 + Len0-0.04;
-  feetR[1] = wid/2 + Len0-0.04;
-  feetInitAngle[0] = 85*PII/180.0;
-  feetInitAngle[1] = -85*PII/180.0;
+  feetR[0] = wid/2 + Len0-0.06;
+  feetR[1] = wid/2 + Len0-0.06;
+  feetInitAngle[0] = 83.5*PII/180.0;
+  feetInitAngle[1] = -83.5*PII/180.0;
 
   // calculate position 
   for(int i(0);i<2;i++){
@@ -132,7 +132,9 @@ Eigen::VectorXd swing_leg_controller::get_action(Eigen::VectorXd user_cmd){
                                            + _KP * (linear_velocity - desired_linear_velocity);
       foot_target_position[0] += rotation_xpos_bias + p_com[0];
       foot_target_position[1] += rotation_ypos_bias + p_com[1];
+      // modify to desired height
       foot_target_position[2] = 0;
+      foot_target_position[2] = p_com[2]-desired_height;
       // std::cout<< _gait_generator->normalized_phase[i] <<std::endl;
       // get beginning foot position in world frame
       foot_position_now[i] = get_swing_foot_trajectory(_gait_generator->normalized_phase[i],foot_position_begin,foot_target_position);

@@ -71,9 +71,10 @@ int main(int argc, char* argv[]) {
   Eigen::VectorXd user_cmd(4);
   float global_timer = 0;
 
-  user_cmd<< 0.0,0.0,0.45,0;   //vx,vy,height,dyaw
+  user_cmd<< -0.2,0.0,0.45,0.0;   //vx,vy,height,dyaw
   double x_com_desire=0.0;
   double y_com_desire=0.0;
+  double yaw_desire=0.0;
   
   while(1){
     raisim::MSLEEP(1);
@@ -111,7 +112,8 @@ int main(int argc, char* argv[]) {
     RobotState.des_delta_q = Eigen::VectorXd::Zero(kinDynSolver.model_nv);
     x_com_desire +=  user_cmd[0] * 0.001;
     y_com_desire +=  user_cmd[1] * 0.001;
-    RobotState.base_rpy_des << 0, 0, 0;
+    yaw_desire += user_cmd[3] * 0.001;
+    RobotState.base_rpy_des << 0, 0, yaw_desire;
     RobotState.base_pos_des << x_com_desire, y_com_desire, user_cmd[2];
 
     // adjust des_delata_q, des_dq and des_ddq to achieve forward walking
@@ -121,7 +123,7 @@ int main(int argc, char* argv[]) {
         RobotState.des_dq.block<2, 1>(0, 0) <<  user_cmd[0] ,  user_cmd[1] ;
         RobotState.des_dq(5) = user_cmd[3];
 
-        double k = 5;
+        double k = 1;
         RobotState.des_ddq.block<2, 1>(0, 0) << k * (user_cmd[0] - RobotState.dq(0)), k * (user_cmd[1] -
                                                                                               RobotState.dq(1));
         RobotState.des_ddq(5) = k * (user_cmd[3] - RobotState.dq(5));
@@ -165,18 +167,18 @@ int main(int argc, char* argv[]) {
     //joint angle position
     auto anglepos = robot.get_leg_pos();
 
-    // dataFile << anglepos[0] << ", " << anglepos[1] << ", " <<anglepos[2] << ", "  
-    //          << anglepos[3] << ", " << anglepos[4] << ", " <<anglepos[5] << ", " 
-    //          << swc.postarget[0].x << ", " << swc.postarget[0].y << ", " <<swc.postarget[0].z << ", "  
-    //          << swc.postarget[1].x << ", " << swc.postarget[1].y << ", " <<swc.postarget[1].z << ", "
-    //          << stc.desired_states[0] << ", " << stc.desired_states[1] << ", " <<stc.desired_states[2] << ", "
-    //          << stc.desired_states[3] << ", " << stc.desired_states[4] << ", " <<stc.desired_states[5] << ", "
-    //          << stc.desired_states[6] << ", " << stc.desired_states[7] << ", " <<stc.desired_states[8] << ", "
-    //          << stc.desired_states[9] << ", " << stc.desired_states[10] << ", " <<stc.desired_states[11] << ", "
-    //          << stc.states[0] << ", " << stc.states[1] << ", " <<stc.states[2] << ", "
-    //          << stc.states[3] << ", " << stc.states[4] << ", " <<stc.states[5] << ", "
-    //          << stc.states[6] << ", " << stc.states[7] << ", " <<stc.states[8] << ", "
-    //          << stc.states[9] << ", " << stc.states[10] << ", " <<stc.states[11] << std::endl;
+    dataFile << anglepos[0] << ", " << anglepos[1] << ", " <<anglepos[2] << ", "  
+             << anglepos[3] << ", " << anglepos[4] << ", " <<anglepos[5] << ", " 
+             << swc.postarget[0].x << ", " << swc.postarget[0].y << ", " <<swc.postarget[0].z << ", "  
+             << swc.postarget[1].x << ", " << swc.postarget[1].y << ", " <<swc.postarget[1].z << ", "
+             << stc.desired_states[0] << ", " << stc.desired_states[1] << ", " <<stc.desired_states[2] << ", "
+             << stc.desired_states[3] << ", " << stc.desired_states[4] << ", " <<stc.desired_states[5] << ", "
+             << stc.desired_states[6] << ", " << stc.desired_states[7] << ", " <<stc.desired_states[8] << ", "
+             << stc.desired_states[9] << ", " << stc.desired_states[10] << ", " <<stc.desired_states[11] << ", "
+             << stc.states[0] << ", " << stc.states[1] << ", " <<stc.states[2] << ", "
+             << stc.states[3] << ", " << stc.states[4] << ", " <<stc.states[5] << ", "
+             << stc.states[6] << ", " << stc.states[7] << ", " <<stc.states[8] << ", "
+             << stc.states[9] << ", " << stc.states[10] << ", " <<stc.states[11] << std::endl;
 
     server.integrateWorldThreadSafe();
 
