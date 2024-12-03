@@ -304,8 +304,8 @@ void WBC_priority::computeTau() {
     eigen_ddq_Opt = ddq_final_kin;
     eigen_ddq_Opt.block<6, 1>(0, 0) += eigen_xOpt.block<6, 1>(0, 0);
     eigen_fr_Opt = Fr_ff + eigen_xOpt.block<6, 1>(6, 0);
-    // std::cout<<"eigen_fr_Opt: "<<eigen_fr_Opt.transpose()<<std::endl;
-    // std::cout<<"deltafr: "<<eigen_xOpt.block<6, 1>(6, 0).transpose()<<std::endl;
+    std::cout<<"eigen_fr_Opt: "<<eigen_fr_Opt.transpose()<<std::endl;
+    std::cout<<"Fr_ff: "<<Fr_ff.transpose()<<std::endl;
 
     if (qpStatus != 0){
         Eigen::MatrixXd A_x;

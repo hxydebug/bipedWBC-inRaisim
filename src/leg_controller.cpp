@@ -206,18 +206,18 @@ void leg_controller::dataBusWrite(DataBus &robotState){
     robotState.swing_fe_pos_des_W = swctr->foot_position_now[1];
     robotState.stance_fe_pos_cur_W=robotState.fe_l_pos_W;
     robotState.stance_fe_rot_cur_W=robotState.fe_l_rot_W;
-    // robotState.Fr_ff[2] = 103;
+    // robotState.Fr_ff[2] = -103;
   } 
   else {
     robotState.legState = DataBus::LegState::RSt;
     robotState.swing_fe_pos_des_W = swctr->foot_position_now[0];
     robotState.stance_fe_pos_cur_W=robotState.fe_r_pos_W;
     robotState.stance_fe_rot_cur_W=robotState.fe_r_rot_W;
-    // robotState.Fr_ff[5] = 103;
+    // robotState.Fr_ff[5] = -103;
   }
   
   
-  robotState.Fr_ff = stctr->GRF;
+  robotState.Fr_ff = -stctr->GRF;
 
 
 }

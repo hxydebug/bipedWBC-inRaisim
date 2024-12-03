@@ -71,7 +71,7 @@ int main(int argc, char* argv[]) {
   Eigen::VectorXd user_cmd(4);
   float global_timer = 0;
 
-  user_cmd<< -0.2,0.0,0.45,0.0;   //vx,vy,height,dyaw
+  user_cmd<< 0.6,0.0,0.45,0.0;   //vx,vy,height,dyaw
   double x_com_desire=0.0;
   double y_com_desire=0.0;
   double yaw_desire=0.0;
@@ -130,7 +130,7 @@ int main(int argc, char* argv[]) {
     }
 
     // leg_tau << 0,0,0,0,0,0;
-    // cout << leg_tau <<endl;
+    // cout << RobotState.Fr_ff.transpose() <<endl;
     if (global_timer>0.5) {
       // WBC Calculation
       WBC_solv.dataBusRead(RobotState);
@@ -178,7 +178,11 @@ int main(int argc, char* argv[]) {
              << stc.states[0] << ", " << stc.states[1] << ", " <<stc.states[2] << ", "
              << stc.states[3] << ", " << stc.states[4] << ", " <<stc.states[5] << ", "
              << stc.states[6] << ", " << stc.states[7] << ", " <<stc.states[8] << ", "
-             << stc.states[9] << ", " << stc.states[10] << ", " <<stc.states[11] << std::endl;
+             << stc.states[9] << ", " << stc.states[10] << ", " <<stc.states[11] << ", "
+             << RobotState.fe_r_pos_W[0] << ", "<< RobotState.fe_r_pos_W[1] << ", "<< RobotState.fe_r_pos_W[2] << ", " 
+             << RobotState.fe_l_pos_W[0] << ", "<< RobotState.fe_l_pos_W[1] << ", "<< RobotState.fe_l_pos_W[2] << ", " 
+             << RobotState.swing_fe_pos_des_W[0] << ", "<< RobotState.swing_fe_pos_des_W[1] << ", "<< RobotState.swing_fe_pos_des_W[2] << ", " 
+             << RobotState.legState << std::endl;
 
     server.integrateWorldThreadSafe();
 
