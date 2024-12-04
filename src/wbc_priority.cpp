@@ -60,9 +60,9 @@ WBC_priority::WBC_priority(int model_nv_In, int QP_nvIn, int QP_ncIn, double miu
 
     std::vector<std::string> taskOrder_walk;
     taskOrder_walk.emplace_back("static_Contact");
-    taskOrder_walk.emplace_back("SwingLeg");
-    taskOrder_walk.emplace_back("PosRot");
     // taskOrder_walk.emplace_back("SwingLeg");
+    taskOrder_walk.emplace_back("PosRot");
+    taskOrder_walk.emplace_back("SwingLeg");
 
     kin_tasks_walk.buildPriority(taskOrder_walk);
 
