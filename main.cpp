@@ -71,7 +71,7 @@ int main(int argc, char* argv[]) {
   Eigen::VectorXd user_cmd(4);
   float global_timer = 0;
 
-  user_cmd<< 0.6,0.0,0.45,0.0;   //vx,vy,height,dyaw
+  user_cmd<< 0.0,0.0,0.45,0.0;   //vx,vy,height,dyaw
   double x_com_desire=0.0;
   double y_com_desire=0.0;
   double yaw_desire=0.0;
