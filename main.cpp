@@ -9,6 +9,7 @@
 #include "useful_math.h"
 #include "wbc_priority.h"
 #include "useful_math.h"
+#include "bikebot_timer.h"
 #include <stdio.h>
 #include <stdlib.h>
 using namespace std;
@@ -76,8 +77,12 @@ int main(int argc, char* argv[]) {
   double y_com_desire=0.0;
   double yaw_desire=0.0;
   
+  // calculate running time for wbc
+  Timer t;
+
   while(1){
     raisim::MSLEEP(1);
+    t.start();
     // get sensor data
     robot.update_state();
     robot.dataBusWrite(RobotState);
@@ -156,6 +161,7 @@ int main(int argc, char* argv[]) {
     else{
       robot.step(leg_tau,body_tau);
     }
+    float wbc_time = (float)t.getSeconds();
     // fix test 
     // Eigen::VectorXd jointNominalConfig(Biped->getGeneralizedCoordinateDim()), jointVelocityTarget(Biped->getDOF());
     // jointNominalConfig<<  0, 0, 0.6, RpyToqua(0.0*PII/180.0,0.0*PII/180.0,0.0*PII/180.0),
@@ -182,7 +188,7 @@ int main(int argc, char* argv[]) {
              << RobotState.fe_r_pos_W[0] << ", "<< RobotState.fe_r_pos_W[1] << ", "<< RobotState.fe_r_pos_W[2] << ", " 
              << RobotState.fe_l_pos_W[0] << ", "<< RobotState.fe_l_pos_W[1] << ", "<< RobotState.fe_l_pos_W[2] << ", " 
              << RobotState.swing_fe_pos_des_W[0] << ", "<< RobotState.swing_fe_pos_des_W[1] << ", "<< RobotState.swing_fe_pos_des_W[2] << ", " 
-             << RobotState.legState << std::endl;
+             << RobotState.legState << ", " << wbc_time << std::endl;
 
     server.integrateWorldThreadSafe();
 
