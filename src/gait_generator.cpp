@@ -7,7 +7,7 @@ float nominal_contact_detection_phase = 0.1;
 
 
 gait_generator::gait_generator(robot *bike){
-
+    robot_stand = 0;
     licycle = bike;
     stance_duration = nominal_stance_duration;
     stance_dutyrate = nominal_stance_dutyrate;
@@ -59,6 +59,10 @@ void gait_generator::update(float current_time){
         //     std::cout<<"lost contact detected."<<std::endl;
         //     leg_state[i] = Lose_Contact;
         // }
+    }
+    if(robot_stand) {
+        leg_state[0]=1;
+        leg_state[1]=1;
     }
     // std::cout<<"left: "<<leg_state[0]<<","<<normalized_phase[0]<<std::endl;
     // std::cout<<"righ: "<<leg_state[1]<<","<<normalized_phase[1]<<std::endl;

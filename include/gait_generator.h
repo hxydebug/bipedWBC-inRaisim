@@ -24,6 +24,7 @@ public:
     Eigen::Vector2d normalized_phase;
     std::vector<int> leg_state = {0,0};
     std::vector<int> desired_leg_state = {0,0};
+    int robot_stand;
 private:
     robot *licycle;
     Eigen::Vector2d stance_dutyrate;

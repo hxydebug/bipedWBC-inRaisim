@@ -88,7 +88,7 @@ int main(int argc, char* argv[]) {
     kinDynSolver.computeDyn();
     kinDynSolver.dataBusWrite(RobotState);
 
-    RobotState.motionState = DataBus::Walk; 
+    RobotState.motionState = DataBus::Stand; 
     
     Eigen::Vector3d p_com_des,w_com_des,dp_com_des,dw_com_des;
     p_com_des<<0,0,0.5;//0.41~0.42
@@ -98,6 +98,42 @@ int main(int argc, char* argv[]) {
     body_tau = l_control.control_body_directly(p_com_des, w_com_des, dp_com_des, dw_com_des);
     if(global_timer>0.5){
       body_tau << 0,0,0,0,0,0;
+      gait_gen.robot_stand=1;
+    }
+    if(global_timer>0.65){
+      // body_tau << 0,0,0,0,0,0;
+      gait_gen.robot_stand=0;
+      RobotState.motionState = DataBus::Walk;
+    }
+    if(global_timer>1.8){
+      // body_tau << 0,0,0,0,0,0;
+      gait_gen.robot_stand=1;
+      RobotState.motionState = DataBus::Stand;
+    }
+    if(global_timer>1.95){
+      // body_tau << 0,0,0,0,0,0;
+      gait_gen.robot_stand=0;
+      RobotState.motionState = DataBus::Walk;
+    }
+    if(global_timer>2.8){
+      // body_tau << 0,0,0,0,0,0;
+      gait_gen.robot_stand=1;
+      RobotState.motionState = DataBus::Stand;
+    }
+    if(global_timer>2.95){
+      // body_tau << 0,0,0,0,0,0;
+      gait_gen.robot_stand=0;
+      RobotState.motionState = DataBus::Walk;
+    }
+    if(global_timer>3.8){
+      // body_tau << 0,0,0,0,0,0;
+      gait_gen.robot_stand=1;
+      RobotState.motionState = DataBus::Stand;
+    }
+    if(global_timer>3.95){
+      // body_tau << 0,0,0,0,0,0;
+      gait_gen.robot_stand=0;
+      RobotState.motionState = DataBus::Walk;
     }
     // if(global_timer>2)  body_tau = l_control.control_body_directly2(p_com_des, w_com_des, dp_com_des, dw_com_des);
     // if(global_timer>5)  
