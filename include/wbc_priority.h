@@ -87,8 +87,8 @@ private:
     Eigen::VectorXd des_ddq, des_dq, des_delta_q, des_q;
     Eigen::VectorXd qIniDes, qIniCur;
 
-    static const int QP_nv_des=18;
-    static const int QP_nc_des=22;
+    static const int QP_nv_des=12;
+    static const int QP_nc_des=16;
 
     qpOASES::real_t qp_H[QP_nv_des*QP_nv_des];
     qpOASES::real_t qp_A[QP_nc_des*QP_nv_des];

@@ -161,7 +161,8 @@ struct DataBus{
         X_cal = Eigen::VectorXd::Zero(12);
         dX_cal = Eigen::VectorXd::Zero(12);
         fe_react_tau_cmd = Eigen::VectorXd::Zero(13*3);
-        Fr_ff = Eigen::VectorXd::Zero(12);
+        Fr_ff = Eigen::VectorXd::Zero(6);
+        wbc_FrRes = Eigen::VectorXd::Zero(6);
         des_ddq = Eigen::VectorXd::Zero(model_nv);
         des_dq = Eigen::VectorXd::Zero(model_nv);
         des_delta_q = Eigen::VectorXd::Zero(model_nv);

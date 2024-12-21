@@ -15,6 +15,7 @@ Feel free to use in any purpose, and cite OpenLoong-Dynamics-Control in any styl
 #include "wbc_priority.h"
 #include "iostream"
 
+int if_initialized = 0;
 // QP_nvIn=12, QP_ncIn=16
 WBC_priority::WBC_priority(int model_nv_In, int QP_nvIn, int QP_ncIn, double miu_In, double dt) : QP_prob(QP_nvIn,
                                                                                                           QP_ncIn) {
@@ -38,7 +39,7 @@ WBC_priority::WBC_priority(int model_nv_In, int QP_nvIn, int QP_ncIn, double miu
     qpOASES::Options options;
     options.setToMPC();
     //options.setToReliable();
-    options.printLevel = qpOASES::PL_LOW;
+    options.printLevel = qpOASES::PL_NONE;
     QP_prob.setOptions(options);
 
     eigen_xOpt = Eigen::VectorXd::Zero(QP_nv);
@@ -283,10 +284,20 @@ void WBC_priority::computeTau() {
 //        xOpt_iniGuess[i] =eigen_xOpt(i);
         qp_g[i] = 0;
     }
-    nWSR = 200;
-    cpu_time = timeStep;
-//    QP_prob.reset();
-    res = QP_prob.init(qp_H, qp_g, qp_A, NULL, NULL, qp_lbA, qp_ubA, nWSR, &cpu_time, xOpt_iniGuess);
+    if(if_initialized==0){
+        nWSR = 200;
+        cpu_time = timeStep;
+    //    QP_prob.reset();
+        res = QP_prob.init(qp_H, qp_g, qp_A, NULL, NULL, qp_lbA, qp_ubA, nWSR, &cpu_time, xOpt_iniGuess);
+        // if_initialized = 1;
+    }
+    else{
+        nWSR = 200;
+        cpu_time = timeStep;
+    //    QP_prob.reset();
+        res = QP_prob.hotstart(qp_g, NULL, NULL, qp_lbA, qp_ubA, nWSR, NULL);
+    }
+    
     qpStatus = qpOASES::getSimpleStatus(res);
 //    if (res==qpOASES::SUCCESSFUL_RETURN)
 //        printf("WBC-QP: successful_return\n");
@@ -304,8 +315,8 @@ void WBC_priority::computeTau() {
     eigen_ddq_Opt = ddq_final_kin;
     eigen_ddq_Opt.block<6, 1>(0, 0) += eigen_xOpt.block<6, 1>(0, 0);
     eigen_fr_Opt = Fr_ff + eigen_xOpt.block<6, 1>(6, 0);
-    std::cout<<"eigen_fr_Opt: "<<eigen_fr_Opt.transpose()<<std::endl;
-    std::cout<<"Fr_ff: "<<Fr_ff.transpose()<<std::endl;
+    // std::cout<<"eigen_fr_Opt: "<<eigen_fr_Opt.transpose()<<std::endl;
+    // std::cout<<"Fr_ff: "<<Fr_ff.transpose()<<std::endl;
 
     if (qpStatus != 0){
         Eigen::MatrixXd A_x;
@@ -362,7 +373,7 @@ void WBC_priority::computeDdq(Pin_KinDyn &pinKinDynIn) {
         kin_tasks_walk.taskLib[id].dxDes = Eigen::VectorXd::Zero(6);
         kin_tasks_walk.taskLib[id].kp = Eigen::MatrixXd::Identity(6, 6) * 500;
         // kin_tasks_walk.taskLib[id].kp.block(3,3,3,3)=Eigen::MatrixXd::Identity(3, 3) * 400;
-        // kin_tasks_walk.taskLib[id].kp.block<1, 1>(2, 2)=Eigen::MatrixXd::Identity(1, 1) * 2000;
+        kin_tasks_walk.taskLib[id].kp.block<1, 1>(5, 5)=Eigen::MatrixXd::Identity(1, 1) * 10;
         kin_tasks_walk.taskLib[id].kd = Eigen::MatrixXd::Identity(6, 6) * 10;
         // kin_tasks_walk.taskLib[id].kd.block(3,3,3,3)=Eigen::MatrixXd::Identity(3, 3) * 100;
         // kin_tasks_walk.taskLib[id].kd.block<1, 1>(2, 2)=Eigen::MatrixXd::Identity(1, 1) * 100;

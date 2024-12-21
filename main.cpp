@@ -59,7 +59,7 @@ int main(int argc, char* argv[]) {
  	swing_leg_controller swc(&robot,&gait_gen,0);
  	stance_leg_controller stc(&robot,&gait_gen,0);
   leg_controller l_control(&robot,&gait_gen,&swc,&stc);
-  Pin_KinDyn kinDynSolver("rsc/biped.urdf"); // kinematics and dynamics solver
+  Pin_KinDyn kinDynSolver("rsc/biped1.urdf"); // kinematics and dynamics solver
   DataBus RobotState(kinDynSolver.model_nv); // data bus
   WBC_priority WBC_solv(kinDynSolver.model_nv, 12, 16, 0.45, 0.001); // WBC solver
 
@@ -69,10 +69,11 @@ int main(int argc, char* argv[]) {
 
   Eigen::VectorXd leg_tau;
   Eigen::VectorXd body_tau;
-  Eigen::VectorXd user_cmd(4);
+  Eigen::VectorXd user_cmd(4),interface_cmd(4);
   float global_timer = 0;
 
-  user_cmd<< 0.6,0.0,0.45,0.0;   //vx,vy,height,dyaw
+  user_cmd<< 0.0,0.0,0.45,0.0;   //vx,vy,height,dyaw
+  interface_cmd = user_cmd;   //vx,vy,height,dyaw
   double x_com_desire=0.0;
   double y_com_desire=0.0;
   double yaw_desire=0.0;
@@ -107,7 +108,15 @@ int main(int argc, char* argv[]) {
     // if(global_timer>2)  body_tau = l_control.control_body_directly2(p_com_des, w_com_des, dp_com_des, dw_com_des);
     // if(global_timer>5)  
     // body_tau << 0,0,0,0,0,0;
-    leg_tau = l_control.get_action(2,user_cmd);
+    // x_com_desire +=  user_cmd[0] * 0.001;
+    x_com_desire +=  user_cmd[0] * 0.001;
+    y_com_desire +=  user_cmd[1] * 0.001;
+    yaw_desire += user_cmd[3] * 0.001;
+    interface_cmd = user_cmd;
+    double kp = 1;
+    interface_cmd[0] += kp*(x_com_desire-RobotState.q(0));
+    interface_cmd[1] += kp*(y_com_desire-RobotState.q(1));
+    leg_tau = l_control.get_action(2,interface_cmd);
     l_control.dataBusWrite(RobotState);
 
     // ------------- WBC ------------
@@ -115,23 +124,20 @@ int main(int argc, char* argv[]) {
     RobotState.des_ddq = Eigen::VectorXd::Zero(kinDynSolver.model_nv);
     RobotState.des_dq = Eigen::VectorXd::Zero(kinDynSolver.model_nv);
     RobotState.des_delta_q = Eigen::VectorXd::Zero(kinDynSolver.model_nv);
-    x_com_desire +=  user_cmd[0] * 0.001;
-    y_com_desire +=  user_cmd[1] * 0.001;
-    yaw_desire += user_cmd[3] * 0.001;
     RobotState.base_rpy_des << 0, 0, yaw_desire;
     RobotState.base_pos_des << x_com_desire, y_com_desire, user_cmd[2];
 
     // adjust des_delata_q, des_dq and des_ddq to achieve forward walking
     if (global_timer>0.5) {
-        RobotState.des_delta_q.block<2, 1>(0, 0) << user_cmd[0] *0.001, user_cmd[1] * 0.001;
-        RobotState.des_delta_q(5) = user_cmd[3] * 0.001;
-        RobotState.des_dq.block<2, 1>(0, 0) <<  user_cmd[0] ,  user_cmd[1] ;
-        RobotState.des_dq(5) = user_cmd[3];
+        RobotState.des_delta_q.block<2, 1>(0, 0) << interface_cmd[0] *0.001, interface_cmd[1] * 0.001;
+        RobotState.des_delta_q(5) = interface_cmd[3] * 0.001;
+        RobotState.des_dq.block<2, 1>(0, 0) <<  interface_cmd[0] ,  interface_cmd[1] ;
+        RobotState.des_dq(5) = interface_cmd[3];
 
         double k = 1;
-        RobotState.des_ddq.block<2, 1>(0, 0) << k * (user_cmd[0] - RobotState.dq(0)), k * (user_cmd[1] -
+        RobotState.des_ddq.block<2, 1>(0, 0) << k * (interface_cmd[0] - RobotState.dq(0)), k * (interface_cmd[1] -
                                                                                               RobotState.dq(1));
-        RobotState.des_ddq(5) = k * (user_cmd[3] - RobotState.dq(5));
+        RobotState.des_ddq(5) = k * (interface_cmd[3] - RobotState.dq(5));
     }
 
     // leg_tau << 0,0,0,0,0,0;
@@ -152,7 +158,7 @@ int main(int argc, char* argv[]) {
       // cout<<RobotState.motors_posDes<<endl;
       // cout<<RobotState.motors_velDes<<endl;
       // cout<<RobotState.pBase_W<<endl;
-      cout<<global_timer<<endl;
+      // cout<<global_timer<<endl;
       // cout<<RobotState.q(0)<<" "<<RobotState.q(1)<<" "<<RobotState.q(2)<<endl;
       Eigen::VectorXd leg_tau1 = l_control.final_tau(RobotState);
       // cout<<leg_tau1<<endl;
@@ -162,6 +168,7 @@ int main(int argc, char* argv[]) {
       robot.step(leg_tau,body_tau);
     }
     float wbc_time = (float)t.getSeconds();
+    // cout << "wbc_time: " << wbc_time << endl;
     // fix test 
     // Eigen::VectorXd jointNominalConfig(Biped->getGeneralizedCoordinateDim()), jointVelocityTarget(Biped->getDOF());
     // jointNominalConfig<<  0, 0, 0.6, RpyToqua(0.0*PII/180.0,0.0*PII/180.0,0.0*PII/180.0),
@@ -188,7 +195,12 @@ int main(int argc, char* argv[]) {
              << RobotState.fe_r_pos_W[0] << ", "<< RobotState.fe_r_pos_W[1] << ", "<< RobotState.fe_r_pos_W[2] << ", " 
              << RobotState.fe_l_pos_W[0] << ", "<< RobotState.fe_l_pos_W[1] << ", "<< RobotState.fe_l_pos_W[2] << ", " 
              << RobotState.swing_fe_pos_des_W[0] << ", "<< RobotState.swing_fe_pos_des_W[1] << ", "<< RobotState.swing_fe_pos_des_W[2] << ", " 
-             << RobotState.legState << ", " << wbc_time << std::endl;
+             << RobotState.legState << ", " << wbc_time << ", "
+             << RobotState.wbc_FrRes[0] << ", " << RobotState.wbc_FrRes[1] << ", " << RobotState.wbc_FrRes[2] << ", "
+             << RobotState.wbc_FrRes[3] << ", " << RobotState.wbc_FrRes[4] << ", " << RobotState.wbc_FrRes[5] << ", "
+             << RobotState.Fr_ff[0] << ", " << RobotState.Fr_ff[1] << ", " << RobotState.Fr_ff[2] << ", "
+             << RobotState.Fr_ff[3] << ", " << RobotState.Fr_ff[4] << ", " << RobotState.Fr_ff[5] << ", "
+             << std::endl;
 
     server.integrateWorldThreadSafe();
 

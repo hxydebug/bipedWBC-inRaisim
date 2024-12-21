@@ -72,6 +72,7 @@
         "typeindex": "cpp",
         "valarray": "cpp",
         "string": "cpp",
-        "*.inc": "cpp"
+        "*.inc": "cpp",
+        "specialfunctions": "cpp"
     }
 }
