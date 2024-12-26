@@ -12,6 +12,7 @@
 #include "bikebot_timer.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include "adaptivefootPlace.h"
 using namespace std;
 
 int main(int argc, char* argv[]) {
@@ -56,7 +57,8 @@ int main(int argc, char* argv[]) {
 
   ///controller init
   gait_generator gait_gen(&robot);
- 	swing_leg_controller swc(&robot,&gait_gen,0);
+  FootHoldPlanner footplanner(0.45, 0.2, 0.0, 0.2);
+ 	swing_leg_controller swc(&robot,&gait_gen,&footplanner,0);
  	stance_leg_controller stc(&robot,&gait_gen,0);
   leg_controller l_control(&robot,&gait_gen,&swc,&stc);
   Pin_KinDyn kinDynSolver("rsc/biped1.urdf"); // kinematics and dynamics solver

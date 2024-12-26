@@ -3,12 +3,12 @@
 
 #include "gait_generator.h"
 #include "control.h"
-
+#include "adaptivefootPlace.h"
 
 
 class swing_leg_controller{
 public:
-    swing_leg_controller(robot *bike,gait_generator *gait_generator,float desired_speed);
+    swing_leg_controller(robot *bike,gait_generator *gait_generator,FootHoldPlanner *footplanner, float desired_speed);
     void update(float current_time);
     Eigen::VectorXd get_action(Eigen::VectorXd user_cmd);
     void set_PDGain();
@@ -16,6 +16,7 @@ public:
     Position postarget[2];
     float desired_xspeed;
     Eigen::Vector3d foot_position_now[2];
+    FootHoldPlanner *foot_planner;
 private:
     Eigen::VectorXd pGain,dGain;
     gait_generator *_gait_generator;

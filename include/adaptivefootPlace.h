@@ -5,20 +5,30 @@ class FootHoldPlanner{
 
 public:
 
-    FootHoldPlanner(double comHeight, double stepDuration, double stepWidth);
-    std::vector<double> ComputeNextfootHold(
-        int Nsteps,
-        Eigen::VectorXd b0,
-        int currentStancefootID,
-        Eigen::VectorXd currentStancefootPosition,
-        double phase);
+    FootHoldPlanner(double comHeight, double stepPeriod, double averageSpeed, double stepWidth);
+    Eigen::VectorXd ComputeNextfootHold(int Nsteps,
+                                        double dcmOffsetX,
+                                        double dcmOffsetY,
+                                        int currentStancefootID,
+                                        double currentStancefootPositionX,
+                                        double currentStancefootPositionY,
+                                        double phase);
+    double deltaTransformation(double timeDuration);
+    void getStanceFootSequence(int Nsteps, int currentStanceFoot);
+    double dcmXSteady;
+    double dcmYSteady;
+    Eigen::VectorXd stanceFootSeq;
+    Eigen::MatrixXd A_qp;
+    Eigen::MatrixXd B_qp;
+    double omega; // frequency for biped walking
 
 private:
-    float g; // 9.8
-    float h; // com height
-    float omega; // frequency for biped walking
-    float stepDuration; // time length of each step
-    float leftoverTime; // the time duration before this step finishes
-    float averageSpeed; // average longitudinal speed
+    double g; // 9.8
+    double h; // com height
+    double stepDuration; // time length of each step
+    double leftoverTime; // the time duration before this step finishes
+    double averageSpeedX; // average longitudinal speed
+    double stepLengthSteady;
+    double stepWidthSteady;
     
 };

@@ -6,9 +6,10 @@ float desired_height = 0.565;
 float t_swing = stance_t;
 Eigen::Vector3d dP;
 
-swing_leg_controller::swing_leg_controller(robot *bike,gait_generator *gait_generator,float desired_speed){
+swing_leg_controller::swing_leg_controller(robot *bike,gait_generator *gait_generator,FootHoldPlanner *footplanner, float desired_speed){
   licycle = bike;
   _gait_generator = gait_generator;
+  foot_planner = footplanner;
 
   postarget[0].x = 0;
   postarget[0].y = 0;
@@ -132,9 +133,17 @@ Eigen::VectorXd swing_leg_controller::get_action(Eigen::VectorXd user_cmd){
                                            + _KP * (linear_velocity - desired_linear_velocity);
       foot_target_position[0] += rotation_xpos_bias + p_com[0];
       foot_target_position[1] += rotation_ypos_bias + p_com[1];
+
+      // use adaptive foot placement
+      int Nsteps = 3;
+      double b0x = p_com[0] + com_velocity[0]/foot_planner->omega - foot_position_begin[0];
+      double b0y = p_com[1] + com_velocity[1]/foot_planner->omega - foot_position_begin[1];
+      auto foothold = foot_planner->ComputeNextfootHold(Nsteps,b0x,b0y,_gait_generator->leg_state[1],foot_position_begin[0],foot_position_begin[1],_gait_generator->normalized_phase[0]);
+      foot_target_position[0] = foothold[0];
+      foot_target_position[1] = foothold[1];
       // modify to desired height
-      foot_target_position[2] = 0;
-      // foot_target_position[2] = p_com[2]-desired_height;
+      // foot_target_position[2] = 0;
+      foot_target_position[2] = p_com[2]-desired_height;
       // std::cout<< _gait_generator->normalized_phase[i] <<std::endl;
       // get beginning foot position in world frame
       foot_position_now[i] = get_swing_foot_trajectory(_gait_generator->normalized_phase[i],foot_position_begin,foot_target_position);

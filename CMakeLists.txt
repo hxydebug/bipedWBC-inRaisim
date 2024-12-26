@@ -88,6 +88,7 @@ add_library(control	src/control.cpp)
 add_library(gait_generator	src/gait_generator.cpp)
 add_library(model	src/model.cpp)
 add_library(opmath	src/opmath.cpp)
+add_library(adaptivefootPlace	src/adaptivefootPlace.cpp)
 add_library(core  ${SOURCES})
 
 target_link_libraries(model PUBLIC raisim::raisim pthread opmath)
@@ -108,7 +109,7 @@ target_include_directories(gait_generator PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/inc
 target_link_libraries(stance_leg_controller PUBLIC raisim::raisim pthread model opmath qpOASES)
 target_include_directories(stance_leg_controller PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
-target_link_libraries(swing_leg_controller PUBLIC raisim::raisim pthread model opmath control)
+target_link_libraries(swing_leg_controller PUBLIC raisim::raisim pthread model opmath control adaptivefootPlace)
 target_include_directories(swing_leg_controller PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 target_link_libraries(control PUBLIC raisim::raisim pthread opmath)
@@ -118,7 +119,7 @@ add_executable(qptest qptest.cpp)
 target_link_libraries(qptest qpOASES)
 
 add_executable(Biped main.cpp)
-target_link_libraries(Biped PUBLIC core raisim::raisim pthread leg_controller model opmath swing_leg_controller stance_leg_controller gait_generator control)
+target_link_libraries(Biped PUBLIC core raisim::raisim pthread leg_controller model opmath swing_leg_controller stance_leg_controller gait_generator control adaptivefootPlace)
 target_include_directories(Biped PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/rsc DESTINATION ${CMAKE_BINARY_DIR})

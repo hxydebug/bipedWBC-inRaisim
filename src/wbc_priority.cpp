@@ -48,7 +48,7 @@ WBC_priority::WBC_priority(int model_nv_In, int QP_nvIn, int QP_ncIn, double miu
     eigen_tau_Opt = Eigen::VectorXd::Zero(model_nv - 6);
 
     delta_q_final_kin = Eigen::VectorXd::Zero(model_nv);
-    dq_final_kin = Eigen::VectorXd::Zero(model_nv);;
+    dq_final_kin = Eigen::VectorXd::Zero(model_nv);
     ddq_final_kin = Eigen::VectorXd::Zero(model_nv);
 
     base_rpy_cur = Eigen::VectorXd::Zero(3);
