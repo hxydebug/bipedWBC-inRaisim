@@ -1,5 +1,12 @@
 #ifndef __ADAPTIVEFOOTPLACE_H
 #define __ADAPTIVEFOOTPLACE_H
+#include "qpOASES.hpp"
+#include "qpOASES/Types.hpp"
+#include <unsupported/Eigen/MatrixFunctions>
+#include <Eigen/Geometry>
+#include <Eigen/LU>
+#include "Eigen/SparseCore"
+#include <math.h>
 
 class FootHoldPlanner{
 
@@ -15,6 +22,8 @@ public:
                                         double phase);
     double deltaTransformation(double timeDuration);
     void getStanceFootSequence(int Nsteps, int currentStanceFoot);
+    Eigen::VectorXd optimalLongitudinalFootPlacement(int Nsteps, double dcmOffsetX);
+    Eigen::VectorXd optimalLateralFootPlacement(int Nsteps, double dcmOffsetY);
     double dcmXSteady;
     double dcmYSteady;
     Eigen::VectorXd stanceFootSeq;
@@ -32,3 +41,5 @@ private:
     double stepWidthSteady;
     
 };
+
+#endif

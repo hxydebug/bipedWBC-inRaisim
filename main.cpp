@@ -84,7 +84,7 @@ int main(int argc, char* argv[]) {
   Timer t;
 
   while(1){
-    raisim::MSLEEP(1);
+    raisim::MSLEEP(5);
     t.start();
     // get sensor data
     robot.update_state();
@@ -104,7 +104,7 @@ int main(int argc, char* argv[]) {
     w_com_des<<0,0,0;
     dw_com_des<<0,0,0;
     body_tau = l_control.control_body_directly(p_com_des, w_com_des, dp_com_des, dw_com_des);
-    if(global_timer>0.5){
+    if(global_timer>1.5){
       body_tau << 0,0,0,0,0,0;
     }
     // if(global_timer>2)  body_tau = l_control.control_body_directly2(p_com_des, w_com_des, dp_com_des, dw_com_des);
@@ -144,7 +144,7 @@ int main(int argc, char* argv[]) {
 
     // leg_tau << 0,0,0,0,0,0;
     // cout << RobotState.Fr_ff.transpose() <<endl;
-    if (global_timer>0.5) {
+    if (global_timer>500) {
       // WBC Calculation
       WBC_solv.dataBusRead(RobotState);
       WBC_solv.computeDdq(kinDynSolver);

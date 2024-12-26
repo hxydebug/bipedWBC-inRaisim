@@ -1,16 +1,10 @@
 #include "adaptivefootPlace.h"
-#include "qpOASES.hpp"
-#include "qpOASES/Types.hpp"
-#include <unsupported/Eigen/MatrixFunctions>
-#include <Eigen/Geometry>
-#include <Eigen/LU>
-#include "Eigen/SparseCore"
-#include <math.h>
+
 
 using qpOASES::QProblem;
 using namespace std;
 
-void WBC_priority::copy_Eigen_to_real_t(qpOASES::real_t *target, const Eigen::MatrixXd &source, int nRows, int nCols);
+void copy_Eigen_to_real_t(qpOASES::real_t *target, const Eigen::MatrixXd &source, int nRows, int nCols);
 
 
 FootHoldPlanner::FootHoldPlanner(double comHeight, double stepPeriod, double averageSpeed, double stepWidth)
@@ -40,9 +34,12 @@ Eigen::VectorXd FootHoldPlanner::ComputeNextfootHold(int Nsteps,
     leftoverTime = stepDuration*(1.0-phase);
     FootHoldPlanner::getStanceFootSequence(Nsteps,currentStancefootID);
     // calculate the same A_qp and B_qp
-    double A0 = FootHoldPlanner::deltaTransformation(leftoverTime);
-    double A = FootHoldPlanner::deltaTransformation(stepDuration);
-    double B = -1.0;
+    Eigen::MatrixXd A0 = Eigen::MatrixXd::Zero(1, 1);
+    Eigen::MatrixXd A = Eigen::MatrixXd::Zero(1, 1);
+    Eigen::MatrixXd B = Eigen::MatrixXd::Zero(1, 1);
+    A0(0,0) = FootHoldPlanner::deltaTransformation(leftoverTime);
+    A(0,0) = FootHoldPlanner::deltaTransformation(stepDuration);
+    B(0,0) = -1.0;
     A_qp = Eigen::MatrixXd::Zero(Nsteps, 1);
     Eigen::MatrixXd B_aux = Eigen::MatrixXd::Zero(Nsteps, 1);
     B_qp = Eigen::MatrixXd::Zero(Nsteps, Nsteps);
@@ -79,8 +76,8 @@ Eigen::VectorXd FootHoldPlanner::optimalLongitudinalFootPlacement(int Nsteps, do
     double x0 = dcmOffsetX;
     double x_low = -1.0;
     double x_high = 1.0;
-    double u_low = -0.3;
-    double u_high = 0.3;
+    double u_low = -0.9;
+    double u_high = 0.9;
     Eigen::VectorXd x_low_Vector = Eigen::VectorXd::Zero(Nsteps);
     Eigen::VectorXd x_high_Vector = Eigen::VectorXd::Zero(Nsteps);
     Eigen::VectorXd u_low_Vector = Eigen::VectorXd::Zero(Nsteps);
@@ -145,15 +142,15 @@ Eigen::VectorXd FootHoldPlanner::optimalLongitudinalFootPlacement(int Nsteps, do
 Eigen::VectorXd FootHoldPlanner::optimalLateralFootPlacement(int Nsteps, double dcmOffsetY){
 
     double x0 = dcmOffsetY;
-    double x_low_left = -0.15;
+    double x_low_left = -1;
     double x_high_left = 0;
     double x_low_right = 0;
-    double x_high_right = 0.15;
+    double x_high_right = 1;
 
-    double u_low_left = 0.1;
-    double u_high_left = 0.3;
-    double u_low_right = -0.3;
-    double u_high_right = -0.1;
+    double u_low_left = 0.0;
+    double u_high_left = 0.9;
+    double u_low_right = -0.9;
+    double u_high_right = -0.0;
     Eigen::VectorXd x_low_Vector = Eigen::VectorXd::Zero(Nsteps);
     Eigen::VectorXd x_high_Vector = Eigen::VectorXd::Zero(Nsteps);
     Eigen::VectorXd u_low_Vector = Eigen::VectorXd::Zero(Nsteps);
@@ -242,7 +239,7 @@ double FootHoldPlanner::deltaTransformation(double timeDuration){
     return exp(omega*timeDuration);
 }
 
-void WBC_priority::copy_Eigen_to_real_t(qpOASES::real_t *target, const Eigen::MatrixXd &source, int nRows, int nCols) {
+void copy_Eigen_to_real_t(qpOASES::real_t *target, const Eigen::MatrixXd &source, int nRows, int nCols) {
     int count = 0;
 
     for (int i = 0; i < nRows; i++) {
