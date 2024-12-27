@@ -182,27 +182,27 @@ int main(int argc, char* argv[]) {
     //joint angle position
     auto anglepos = robot.get_leg_pos();
 
-    dataFile << anglepos[0] << ", " << anglepos[1] << ", " <<anglepos[2] << ", "  
-             << anglepos[3] << ", " << anglepos[4] << ", " <<anglepos[5] << ", " 
-             << swc.postarget[0].x << ", " << swc.postarget[0].y << ", " <<swc.postarget[0].z << ", "  
-             << swc.postarget[1].x << ", " << swc.postarget[1].y << ", " <<swc.postarget[1].z << ", "
-             << stc.desired_states[0] << ", " << stc.desired_states[1] << ", " <<stc.desired_states[2] << ", "
-             << stc.desired_states[3] << ", " << stc.desired_states[4] << ", " <<stc.desired_states[5] << ", "
-             << stc.desired_states[6] << ", " << stc.desired_states[7] << ", " <<stc.desired_states[8] << ", "
-             << stc.desired_states[9] << ", " << stc.desired_states[10] << ", " <<stc.desired_states[11] << ", "
-             << stc.states[0] << ", " << stc.states[1] << ", " <<stc.states[2] << ", "
-             << stc.states[3] << ", " << stc.states[4] << ", " <<stc.states[5] << ", "
-             << stc.states[6] << ", " << stc.states[7] << ", " <<stc.states[8] << ", "
-             << stc.states[9] << ", " << stc.states[10] << ", " <<stc.states[11] << ", "
-             << RobotState.fe_r_pos_W[0] << ", "<< RobotState.fe_r_pos_W[1] << ", "<< RobotState.fe_r_pos_W[2] << ", " 
-             << RobotState.fe_l_pos_W[0] << ", "<< RobotState.fe_l_pos_W[1] << ", "<< RobotState.fe_l_pos_W[2] << ", " 
-             << RobotState.swing_fe_pos_des_W[0] << ", "<< RobotState.swing_fe_pos_des_W[1] << ", "<< RobotState.swing_fe_pos_des_W[2] << ", " 
-             << RobotState.legState << ", " << wbc_time << ", "
-             << RobotState.wbc_FrRes[0] << ", " << RobotState.wbc_FrRes[1] << ", " << RobotState.wbc_FrRes[2] << ", "
-             << RobotState.wbc_FrRes[3] << ", " << RobotState.wbc_FrRes[4] << ", " << RobotState.wbc_FrRes[5] << ", "
-             << RobotState.Fr_ff[0] << ", " << RobotState.Fr_ff[1] << ", " << RobotState.Fr_ff[2] << ", "
-             << RobotState.Fr_ff[3] << ", " << RobotState.Fr_ff[4] << ", " << RobotState.Fr_ff[5] << ", "
-             << std::endl;
+    // dataFile << anglepos[0] << ", " << anglepos[1] << ", " <<anglepos[2] << ", "  
+    //          << anglepos[3] << ", " << anglepos[4] << ", " <<anglepos[5] << ", " 
+    //          << swc.postarget[0].x << ", " << swc.postarget[0].y << ", " <<swc.postarget[0].z << ", "  
+    //          << swc.postarget[1].x << ", " << swc.postarget[1].y << ", " <<swc.postarget[1].z << ", "
+    //          << stc.desired_states[0] << ", " << stc.desired_states[1] << ", " <<stc.desired_states[2] << ", "
+    //          << stc.desired_states[3] << ", " << stc.desired_states[4] << ", " <<stc.desired_states[5] << ", "
+    //          << stc.desired_states[6] << ", " << stc.desired_states[7] << ", " <<stc.desired_states[8] << ", "
+    //          << stc.desired_states[9] << ", " << stc.desired_states[10] << ", " <<stc.desired_states[11] << ", "
+    //          << stc.states[0] << ", " << stc.states[1] << ", " <<stc.states[2] << ", "
+    //          << stc.states[3] << ", " << stc.states[4] << ", " <<stc.states[5] << ", "
+    //          << stc.states[6] << ", " << stc.states[7] << ", " <<stc.states[8] << ", "
+    //          << stc.states[9] << ", " << stc.states[10] << ", " <<stc.states[11] << ", "
+    //          << RobotState.fe_r_pos_W[0] << ", "<< RobotState.fe_r_pos_W[1] << ", "<< RobotState.fe_r_pos_W[2] << ", " 
+    //          << RobotState.fe_l_pos_W[0] << ", "<< RobotState.fe_l_pos_W[1] << ", "<< RobotState.fe_l_pos_W[2] << ", " 
+    //          << RobotState.swing_fe_pos_des_W[0] << ", "<< RobotState.swing_fe_pos_des_W[1] << ", "<< RobotState.swing_fe_pos_des_W[2] << ", " 
+    //          << RobotState.legState << ", " << wbc_time << ", "
+    //          << RobotState.wbc_FrRes[0] << ", " << RobotState.wbc_FrRes[1] << ", " << RobotState.wbc_FrRes[2] << ", "
+    //          << RobotState.wbc_FrRes[3] << ", " << RobotState.wbc_FrRes[4] << ", " << RobotState.wbc_FrRes[5] << ", "
+    //          << RobotState.Fr_ff[0] << ", " << RobotState.Fr_ff[1] << ", " << RobotState.Fr_ff[2] << ", "
+    //          << RobotState.Fr_ff[3] << ", " << RobotState.Fr_ff[4] << ", " << RobotState.Fr_ff[5] << ", "
+    //          << std::endl;
 
     server.integrateWorldThreadSafe();
 

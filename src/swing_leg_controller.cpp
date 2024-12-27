@@ -54,7 +54,7 @@ void swing_leg_controller::update(float current_time){
       Eigen::Vector3d foot_position_body;
       foot_position_body << phase_switch_foot_local_position[i].x, phase_switch_foot_local_position[i].y, phase_switch_foot_local_position[i].z;
       Eigen::Matrix3d com_rotm = licycle->get_com_rotmatrix();
-      foot_position_begin = com_rotm * foot_position_body + pos_com_last;
+      foot_position_begin[i] = com_rotm * foot_position_body + pos_com_last;
     }
   }
 
@@ -136,9 +136,9 @@ Eigen::VectorXd swing_leg_controller::get_action(Eigen::VectorXd user_cmd){
 
       // use adaptive foot placement
       int Nsteps = 3;
-      double b0x = p_com[0] + com_velocity[0]/foot_planner->omega - foot_position_begin[0];
-      double b0y = p_com[1] + com_velocity[1]/foot_planner->omega - foot_position_begin[1];
-      auto foothold = foot_planner->ComputeNextfootHold(Nsteps,b0x,b0y,_gait_generator->leg_state[1],foot_position_begin[0],foot_position_begin[1],_gait_generator->normalized_phase[0]);
+      double b0x = p_com[0] + com_velocity[0]/foot_planner->omega - foot_position_begin[i][0];
+      double b0y = p_com[1] + com_velocity[1]/foot_planner->omega - foot_position_begin[i][1];
+      auto foothold = foot_planner->ComputeNextfootHold(Nsteps,b0x,b0y,_gait_generator->leg_state[1],foot_position_begin[i][0],foot_position_begin[i][1],_gait_generator->normalized_phase[0]);
       foot_target_position[0] = foothold[0];
       foot_target_position[1] = foothold[1];
       // modify to desired height
@@ -146,7 +146,7 @@ Eigen::VectorXd swing_leg_controller::get_action(Eigen::VectorXd user_cmd){
       foot_target_position[2] = p_com[2]-desired_height;
       // std::cout<< _gait_generator->normalized_phase[i] <<std::endl;
       // get beginning foot position in world frame
-      foot_position_now[i] = get_swing_foot_trajectory(_gait_generator->normalized_phase[i],foot_position_begin,foot_target_position);
+      foot_position_now[i] = get_swing_foot_trajectory(_gait_generator->normalized_phase[i],foot_position_begin[i],foot_target_position);
 
       // from world to body frame
       Eigen::Vector3d foot_position = com_rotm.transpose() * (foot_position_now[i]-p_com);

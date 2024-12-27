@@ -24,7 +24,7 @@ private:
     std::vector<int> last_leg_state = {0,0};
     Position phase_switch_foot_local_position[2];
     Position phase_switch_foot_local_position1[2];
-    Eigen::Vector3d foot_position_begin;
+    Eigen::Vector3d foot_position_begin[2];
     Eigen::Vector3d pos_com_last;
     Eigen::VectorXd _desired_height;
     Eigen::VectorXd bias_positions[2];
