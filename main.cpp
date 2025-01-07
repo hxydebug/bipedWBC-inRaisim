@@ -57,11 +57,11 @@ int main(int argc, char* argv[]) {
 
   ///controller init
   gait_generator gait_gen(&robot);
-  FootHoldPlanner footplanner(0.45, 0.2, 0.0, 0.2);
+  FootHoldPlanner footplanner(0.45, 0.2, 0.0, 0.1);
  	swing_leg_controller swc(&robot,&gait_gen,&footplanner,0);
  	stance_leg_controller stc(&robot,&gait_gen,0);
   leg_controller l_control(&robot,&gait_gen,&swc,&stc);
-  Pin_KinDyn kinDynSolver("rsc/biped1.urdf"); // kinematics and dynamics solver
+  Pin_KinDyn kinDynSolver("rsc/biped.urdf"); // kinematics and dynamics solver
   DataBus RobotState(kinDynSolver.model_nv); // data bus
   WBC_priority WBC_solv(kinDynSolver.model_nv, 12, 16, 0.45, 0.001); // WBC solver
 
@@ -120,7 +120,7 @@ int main(int argc, char* argv[]) {
     interface_cmd[1] += kp*(y_com_desire-RobotState.q(1));
     leg_tau = l_control.get_action(2,interface_cmd);
     l_control.dataBusWrite(RobotState);
-
+    // cout<<footplanner.leftoverTime<<endl;
     // ------------- WBC ------------
     // WBC input
     RobotState.des_ddq = Eigen::VectorXd::Zero(kinDynSolver.model_nv);
@@ -130,8 +130,11 @@ int main(int argc, char* argv[]) {
     RobotState.base_pos_des << x_com_desire, y_com_desire, user_cmd[2];
 
     // adjust des_delata_q, des_dq and des_ddq to achieve forward walking
+    float g_h = 9.8/0.45;
+    interface_cmd[0] = RobotState.dq(0) + 0.001 * g_h*(RobotState.q(0)-swc.foot_position_begin[0]);
+    interface_cmd[1] = RobotState.dq(1) + 0.001 * g_h*(RobotState.q(1)-swc.foot_position_begin[1]);
     if (global_timer>0.5) {
-        RobotState.des_delta_q.block<2, 1>(0, 0) << interface_cmd[0] *0.001, interface_cmd[1] * 0.001;
+        RobotState.des_delta_q.block<2, 1>(0, 0) << RobotState.dq(0) *0.001, RobotState.dq(1) * 0.001;
         RobotState.des_delta_q(5) = interface_cmd[3] * 0.001;
         RobotState.des_dq.block<2, 1>(0, 0) <<  interface_cmd[0] ,  interface_cmd[1] ;
         RobotState.des_dq(5) = interface_cmd[3];
@@ -144,7 +147,7 @@ int main(int argc, char* argv[]) {
 
     // leg_tau << 0,0,0,0,0,0;
     // cout << RobotState.Fr_ff.transpose() <<endl;
-    if (global_timer>500) {
+    if (global_timer>0.5) {
       // WBC Calculation
       WBC_solv.dataBusRead(RobotState);
       WBC_solv.computeDdq(kinDynSolver);
@@ -159,7 +162,7 @@ int main(int argc, char* argv[]) {
       RobotState.motors_torDes = RobotState.wbc_tauJointRes;
       // cout<<RobotState.motors_posDes<<endl;
       // cout<<RobotState.motors_velDes<<endl;
-      // cout<<RobotState.pBase_W<<endl;
+      
       // cout<<global_timer<<endl;
       // cout<<RobotState.q(0)<<" "<<RobotState.q(1)<<" "<<RobotState.q(2)<<endl;
       Eigen::VectorXd leg_tau1 = l_control.final_tau(RobotState);
@@ -204,6 +207,13 @@ int main(int argc, char* argv[]) {
     //          << RobotState.Fr_ff[3] << ", " << RobotState.Fr_ff[4] << ", " << RobotState.Fr_ff[5] << ", "
     //          << std::endl;
 
+    // dataFile << footplanner.footplacements_Xs[0] << ", " << footplanner.footplacements_Xs[1] << ", " << footplanner.footplacements_Xs[2] << ", " << footplanner.footplacements_Xs[3] << ", " << footplanner.footplacements_Xs[4] << ", "
+    //          << footplanner.footplacements_Ys[0] << ", " << footplanner.footplacements_Ys[1] << ", " << footplanner.footplacements_Ys[2] << ", " << footplanner.footplacements_Ys[3] << ", " << footplanner.footplacements_Ys[4] << ", "
+    //          << stc.states[3] << ", " << stc.states[4] << ", " <<stc.states[5] << ", "
+    //          << footplanner.currentStancefootPosition_X << ", " << footplanner.currentStancefootPosition_Y << ", " << footplanner.currentStancefoot_ID
+    //          << std::endl;
+
+             
     server.integrateWorldThreadSafe();
 
   }

@@ -17,6 +17,8 @@ public:
     float desired_xspeed;
     Eigen::Vector3d foot_position_now[2];
     FootHoldPlanner *foot_planner;
+    Eigen::VectorXd foothold;
+    Eigen::Vector3d foot_position_begin;
 private:
     Eigen::VectorXd pGain,dGain;
     gait_generator *_gait_generator;
@@ -24,7 +26,6 @@ private:
     std::vector<int> last_leg_state = {0,0};
     Position phase_switch_foot_local_position[2];
     Position phase_switch_foot_local_position1[2];
-    Eigen::Vector3d foot_position_begin[2];
     Eigen::Vector3d pos_com_last;
     Eigen::VectorXd _desired_height;
     Eigen::VectorXd bias_positions[2];

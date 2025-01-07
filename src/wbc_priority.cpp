@@ -48,7 +48,7 @@ WBC_priority::WBC_priority(int model_nv_In, int QP_nvIn, int QP_ncIn, double miu
     eigen_tau_Opt = Eigen::VectorXd::Zero(model_nv - 6);
 
     delta_q_final_kin = Eigen::VectorXd::Zero(model_nv);
-    dq_final_kin = Eigen::VectorXd::Zero(model_nv);
+    dq_final_kin = Eigen::VectorXd::Zero(model_nv);;
     ddq_final_kin = Eigen::VectorXd::Zero(model_nv);
 
     base_rpy_cur = Eigen::VectorXd::Zero(3);
@@ -260,8 +260,8 @@ void WBC_priority::computeTau() {
     Eigen::MatrixXd eigen_qp_H = Eigen::MatrixXd::Zero(QP_nv, QP_nv);
     Q2 = Eigen::MatrixXd::Identity(6, 6);
     Q1 = Eigen::MatrixXd::Identity(6, 6);
-    eigen_qp_H.block<6, 6>(0, 0) = Q2 * 2.0 * 1e7;
-    eigen_qp_H.block<6, 6>(6, 6) = Q1 * 2.0 * 1e1;
+    eigen_qp_H.block<6, 6>(0, 0) = Q2 * 2.0 * 1e7;// more dynamics
+    eigen_qp_H.block<6, 6>(6, 6) = Q1 * 2.0 * 1e1;// more mpc
 
     // obj: (1/2)x'Hx+x'g
     // s.t. lbA<=Ax<=ubA
@@ -373,7 +373,7 @@ void WBC_priority::computeDdq(Pin_KinDyn &pinKinDynIn) {
         kin_tasks_walk.taskLib[id].dxDes = Eigen::VectorXd::Zero(6);
         kin_tasks_walk.taskLib[id].kp = Eigen::MatrixXd::Identity(6, 6) * 500;
         // kin_tasks_walk.taskLib[id].kp.block(3,3,3,3)=Eigen::MatrixXd::Identity(3, 3) * 400;
-        kin_tasks_walk.taskLib[id].kp.block<1, 1>(5, 5)=Eigen::MatrixXd::Identity(1, 1) * 10;
+        // kin_tasks_walk.taskLib[id].kp.block<1, 1>(2, 2)=Eigen::MatrixXd::Identity(1, 1) * 2000;
         kin_tasks_walk.taskLib[id].kd = Eigen::MatrixXd::Identity(6, 6) * 10;
         // kin_tasks_walk.taskLib[id].kd.block(3,3,3,3)=Eigen::MatrixXd::Identity(3, 3) * 100;
         // kin_tasks_walk.taskLib[id].kd.block<1, 1>(2, 2)=Eigen::MatrixXd::Identity(1, 1) * 100;

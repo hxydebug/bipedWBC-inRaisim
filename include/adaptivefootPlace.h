@@ -30,12 +30,17 @@ public:
     Eigen::MatrixXd A_qp;
     Eigen::MatrixXd B_qp;
     double omega; // frequency for biped walking
+    double leftoverTime; // the time duration before this step finishes
+    Eigen::VectorXd footplacements_Xs;
+    Eigen::VectorXd footplacements_Ys;
+    int currentStancefoot_ID;
+    double currentStancefootPosition_X;
+    double currentStancefootPosition_Y;
 
 private:
     double g; // 9.8
     double h; // com height
     double stepDuration; // time length of each step
-    double leftoverTime; // the time duration before this step finishes
     double averageSpeedX; // average longitudinal speed
     double stepLengthSteady;
     double stepWidthSteady;

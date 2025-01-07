@@ -232,7 +232,7 @@ const int num_legs = 2;
 const int action_dim_ = num_legs * k3Dim;
 const int kStateDim = 13; // 6 dof pose + 6 dof velocity + 1 gravity
 const int planning_horizon = 10;
-const float timestep = 0.025;
+const float timestep = 0.02;
 const float kGravity = 9.81;
 const float kMaxScale = 10;
 const float kMinScale = 0.1;
@@ -314,10 +314,57 @@ std::vector<double> ConvexMpc::ComputeContactForces(
                 p_com_des[0], p_com_des[1], p_com_des[2], 
                 dw_com_des[0], dw_com_des[1], dw_com_des[2], 
                 dp_com_des[0], dp_com_des[1], dp_com_des[2], -kGravity;
-      
-    for (int i = 0; i < planning_horizon; ++i) {
+    
+    float g_h = 9.8/0.45;
+    Eigen::Vector3d stance_foot_p;
+    if(foot_contact_states[0]==0){
+        stance_foot_p = foot_positions_w.col(1);
+    }
+    else{
+        stance_foot_p = foot_positions_w.col(0);
+    }
 
-        for(int j = 0; j < 6; j++){
+    //
+    int i = 0;
+    for(int j = 0; j < 3; j++){
+        if(fabs(des_state_[6+j]) < 0.0001){
+            desired_states_[i * kStateDim + j] = des_state_[j] + des_state_[6+j] * (i + 1) * timestep;
+        }
+        else{
+            desired_states_[i * kStateDim + j] = state_[j] + des_state_[6+j] * (i + 1) * timestep;
+        }
+        desired_states_[i * kStateDim + 6 + j] = des_state_[6+j];
+    }
+    for(int j = 3; j < 5; j++){
+        desired_states_[i * kStateDim + j] = state_[j] + state_[6+j] * (i + 1) * timestep;
+        desired_states_[i * kStateDim + 6 + j] = state_[6+j] + g_h*(state_[j]-stance_foot_p[j-3]) * timestep;
+    }
+
+    int hh = 5;
+    if(fabs(des_state_[6+hh]) < 0.0001){
+        desired_states_[i * kStateDim + hh] = des_state_[hh] + des_state_[6+hh] * (i + 1) * timestep;
+    }
+    else{
+        desired_states_[i * kStateDim + hh] = state_[hh] + des_state_[6+hh] * (i + 1) * timestep;
+    }
+    desired_states_[i * kStateDim + 6 + hh] = des_state_[6+hh];
+
+
+    desired_states_[i * kStateDim + 12] = -kGravity;
+      
+    for (int i = 1; i < planning_horizon; ++i) {
+
+        // for(int j = 0; j < 6; j++){
+        //     if(fabs(des_state_[6+j]) < 0.0001){
+        //         desired_states_[i * kStateDim + j] = des_state_[j] + des_state_[6+j] * (i + 1) * timestep;
+        //     }
+        //     else{
+        //         desired_states_[i * kStateDim + j] = state_[j] + des_state_[6+j] * (i + 1) * timestep;
+        //     }
+        //     desired_states_[i * kStateDim + 6 + j] = des_state_[6+j];
+        // }
+
+        for(int j = 0; j < 3; j++){
             if(fabs(des_state_[6+j]) < 0.0001){
                 desired_states_[i * kStateDim + j] = des_state_[j] + des_state_[6+j] * (i + 1) * timestep;
             }
@@ -326,6 +373,20 @@ std::vector<double> ConvexMpc::ComputeContactForces(
             }
             desired_states_[i * kStateDim + 6 + j] = des_state_[6+j];
         }
+        for(int j = 3; j < 5; j++){
+            desired_states_[i * kStateDim + j] = desired_states_[(i-1) * kStateDim + j] + desired_states_[(i-1) * kStateDim + 6 + j] * timestep;
+            desired_states_[i * kStateDim + 6 + j] = desired_states_[(i-1) * kStateDim + 6 + j] + g_h*(desired_states_[(i-1) * kStateDim + j]-stance_foot_p[j-3]);
+        }
+
+        int hh = 5;
+        if(fabs(des_state_[6+hh]) < 0.0001){
+            desired_states_[i * kStateDim + hh] = des_state_[hh] + des_state_[6+hh] * (i + 1) * timestep;
+        }
+        else{
+            desired_states_[i * kStateDim + hh] = state_[hh] + des_state_[6+hh] * (i + 1) * timestep;
+        }
+        desired_states_[i * kStateDim + 6 + hh] = des_state_[6+hh];
+
 
         desired_states_[i * kStateDim + 12] = -kGravity;
     }

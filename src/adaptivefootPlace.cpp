@@ -31,6 +31,9 @@ Eigen::VectorXd FootHoldPlanner::ComputeNextfootHold(int Nsteps,
                                         double currentStancefootPositionY,
                                         double phase)
 {
+    currentStancefoot_ID = currentStancefootID;
+    currentStancefootPosition_X = currentStancefootPositionX;
+    currentStancefootPosition_Y = currentStancefootPositionY;
     leftoverTime = stepDuration*(1.0-phase);
     FootHoldPlanner::getStanceFootSequence(Nsteps,currentStancefootID);
     // calculate the same A_qp and B_qp
@@ -64,10 +67,10 @@ Eigen::VectorXd FootHoldPlanner::ComputeNextfootHold(int Nsteps,
                 B_aux.block(power * 1, 0, 1, 1);
         }
     }
-    Eigen::VectorXd footplacements_X = FootHoldPlanner::optimalLongitudinalFootPlacement(Nsteps, dcmOffsetX);
-    Eigen::VectorXd footplacements_Y = FootHoldPlanner::optimalLateralFootPlacement(Nsteps, dcmOffsetY);
+    footplacements_Xs = FootHoldPlanner::optimalLongitudinalFootPlacement(Nsteps, dcmOffsetX);
+    footplacements_Ys = FootHoldPlanner::optimalLateralFootPlacement(Nsteps, dcmOffsetY);
     Eigen::VectorXd footHold = Eigen::VectorXd::Zero(2);
-    footHold << footplacements_X[0], footplacements_Y[0];
+    footHold << footplacements_Xs[0], footplacements_Ys[0];
     return footHold;
 }
 
@@ -147,7 +150,7 @@ Eigen::VectorXd FootHoldPlanner::optimalLateralFootPlacement(int Nsteps, double 
     double x_low_right = 0;
     double x_high_right = 1;
 
-    double u_low_left = 0.0;
+    double u_low_left = -0.0;
     double u_high_left = 0.9;
     double u_low_right = -0.9;
     double u_high_right = -0.0;
@@ -176,7 +179,7 @@ Eigen::VectorXd FootHoldPlanner::optimalLateralFootPlacement(int Nsteps, double 
     }
     
     Eigen::MatrixXd Q = Eigen::MatrixXd::Identity(Nsteps, Nsteps) * 1.0 * 1e3;
-    Eigen::MatrixXd R = Eigen::MatrixXd::Identity(Nsteps, Nsteps) * 1.0 * 1e-3;
+    Eigen::MatrixXd R = Eigen::MatrixXd::Identity(Nsteps, Nsteps) * 1.0 * 1e3;
     Eigen::MatrixXd eigen_qp_H = R + B_qp.transpose() * Q * B_qp;
     Eigen::MatrixXd eigen_qp_A = B_qp;
     Eigen::MatrixXd eigen_qp_g = B_qp.transpose() * Q * (A_qp * x0 - x_ref);
