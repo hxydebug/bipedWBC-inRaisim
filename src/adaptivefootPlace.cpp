@@ -67,18 +67,29 @@ Eigen::VectorXd FootHoldPlanner::ComputeNextfootHold(int Nsteps,
                 B_aux.block(power * 1, 0, 1, 1);
         }
     }
-    footplacements_Xs = FootHoldPlanner::optimalLongitudinalFootPlacement(Nsteps, dcmOffsetX);
-    footplacements_Ys = FootHoldPlanner::optimalLateralFootPlacement(Nsteps, dcmOffsetY);
+    // footplacements_Xs = FootHoldPlanner::optimalLongitudinalFootPlacement(Nsteps, dcmOffsetX);
+    // footplacements_Ys = FootHoldPlanner::optimalLateralFootPlacement(Nsteps, dcmOffsetY);
     Eigen::VectorXd footHold = Eigen::VectorXd::Zero(2);
-    footHold << footplacements_Xs[0], footplacements_Ys[0];
+    // footHold << footplacements_Xs[0], footplacements_Ys[0];
+    double learning_rate1 = 0.01;
+    double learning_rate2 = 0.01;
+    if(currentStancefoot_ID == 0){
+        // right leg swing
+        footHold << (dcmOffsetX-dcmXSteady)*(FootHoldPlanner::deltaTransformation(leftoverTime)-learning_rate1)+stepLengthSteady, (dcmOffsetY-dcmYSteady)*(FootHoldPlanner::deltaTransformation(leftoverTime)-learning_rate2)-stepWidthSteady;
+    
+    }
+    else{
+        footHold << (dcmOffsetX-dcmXSteady)*(FootHoldPlanner::deltaTransformation(leftoverTime)-learning_rate1)+stepLengthSteady, (dcmOffsetY+dcmYSteady)*(FootHoldPlanner::deltaTransformation(leftoverTime)-learning_rate2)+stepWidthSteady;
+    
+    }
     return footHold;
 }
 
 Eigen::VectorXd FootHoldPlanner::optimalLongitudinalFootPlacement(int Nsteps, double dcmOffsetX){
     
     double x0 = dcmOffsetX;
-    double x_low = -1.0;
-    double x_high = 1.0;
+    double x_low = -0.5;
+    double x_high = 0.5;
     double u_low = -0.9;
     double u_high = 0.9;
     Eigen::VectorXd x_low_Vector = Eigen::VectorXd::Zero(Nsteps);
@@ -91,11 +102,13 @@ Eigen::VectorXd FootHoldPlanner::optimalLongitudinalFootPlacement(int Nsteps, do
     u_high_Vector.setConstant(u_high);
     Eigen::VectorXd x_ref = Eigen::VectorXd::Zero(Nsteps);
     x_ref.setConstant(dcmXSteady);
-    Eigen::MatrixXd Q = Eigen::MatrixXd::Identity(Nsteps, Nsteps) * 1.0 * 1e3;
+    Eigen::VectorXd u_ref = Eigen::VectorXd::Zero(Nsteps);
+    u_ref.setConstant(stepLengthSteady);
+    Eigen::MatrixXd Q = Eigen::MatrixXd::Identity(Nsteps, Nsteps) * 1.0 * 1e-3;
     Eigen::MatrixXd R = Eigen::MatrixXd::Identity(Nsteps, Nsteps) * 1.0 * 1e3;
     Eigen::MatrixXd eigen_qp_H = R + B_qp.transpose() * Q * B_qp;
     Eigen::MatrixXd eigen_qp_A = B_qp;
-    Eigen::MatrixXd eigen_qp_g = B_qp.transpose() * Q * (A_qp * x0 - x_ref);
+    Eigen::MatrixXd eigen_qp_g = B_qp.transpose() * Q * (A_qp * x0 - x_ref) - R * u_ref;
     Eigen::MatrixXd eigen_qp_lbA = x_low_Vector - A_qp * x0;
     Eigen::MatrixXd eigen_qp_ubA = x_high_Vector - A_qp * x0;
     Eigen::MatrixXd eigen_qp_lb = u_low_Vector;
@@ -145,12 +158,12 @@ Eigen::VectorXd FootHoldPlanner::optimalLongitudinalFootPlacement(int Nsteps, do
 Eigen::VectorXd FootHoldPlanner::optimalLateralFootPlacement(int Nsteps, double dcmOffsetY){
 
     double x0 = dcmOffsetY;
-    double x_low_left = -1;
+    double x_low_left = -0.5;
     double x_high_left = 0;
     double x_low_right = 0;
-    double x_high_right = 1;
+    double x_high_right = 0.5;
 
-    double u_low_left = -0.0;
+    double u_low_left = 0.0;
     double u_high_left = 0.9;
     double u_low_right = -0.9;
     double u_high_right = -0.0;
@@ -159,6 +172,7 @@ Eigen::VectorXd FootHoldPlanner::optimalLateralFootPlacement(int Nsteps, double 
     Eigen::VectorXd u_low_Vector = Eigen::VectorXd::Zero(Nsteps);
     Eigen::VectorXd u_high_Vector = Eigen::VectorXd::Zero(Nsteps);
     Eigen::VectorXd x_ref = Eigen::VectorXd::Zero(Nsteps);
+    Eigen::VectorXd u_ref = Eigen::VectorXd::Zero(Nsteps);
     for (int i = 0; i < Nsteps; ++i) {
         if(stanceFootSeq[i]==0){
             // left foot touch down
@@ -167,6 +181,7 @@ Eigen::VectorXd FootHoldPlanner::optimalLateralFootPlacement(int Nsteps, double 
             u_low_Vector[i] = u_low_left;
             u_high_Vector[i] = u_high_left;
             x_ref[i] = -dcmYSteady;
+            u_ref[i] = stepWidthSteady;
         }
         else{
             // right foot touch down
@@ -175,14 +190,15 @@ Eigen::VectorXd FootHoldPlanner::optimalLateralFootPlacement(int Nsteps, double 
             u_low_Vector[i] = u_low_right;
             u_high_Vector[i] = u_high_right;
             x_ref[i] = dcmYSteady;
+            u_ref[i] = -stepWidthSteady;
         }
     }
     
-    Eigen::MatrixXd Q = Eigen::MatrixXd::Identity(Nsteps, Nsteps) * 1.0 * 1e3;
+    Eigen::MatrixXd Q = Eigen::MatrixXd::Identity(Nsteps, Nsteps) * 1.0 * 1e-3;
     Eigen::MatrixXd R = Eigen::MatrixXd::Identity(Nsteps, Nsteps) * 1.0 * 1e3;
     Eigen::MatrixXd eigen_qp_H = R + B_qp.transpose() * Q * B_qp;
     Eigen::MatrixXd eigen_qp_A = B_qp;
-    Eigen::MatrixXd eigen_qp_g = B_qp.transpose() * Q * (A_qp * x0 - x_ref);
+    Eigen::MatrixXd eigen_qp_g = B_qp.transpose() * Q * (A_qp * x0 - x_ref)  - R * u_ref;
     Eigen::MatrixXd eigen_qp_lbA = x_low_Vector - A_qp * x0;
     Eigen::MatrixXd eigen_qp_ubA = x_high_Vector - A_qp * x0;
     Eigen::MatrixXd eigen_qp_lb = u_low_Vector;

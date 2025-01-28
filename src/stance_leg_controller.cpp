@@ -324,7 +324,7 @@ std::vector<double> ConvexMpc::ComputeContactForces(
         stance_foot_p = foot_positions_w.col(0);
     }
 
-    //
+    
     int i = 0;
     for(int j = 0; j < 3; j++){
         if(fabs(des_state_[6+j]) < 0.0001){

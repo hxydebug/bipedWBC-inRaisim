@@ -13,7 +13,7 @@
 #define Lose_Contact 2
 #define Early_Contact 3
 
-#define stance_t 0.2
+#define stance_t 0.25
 
 class gait_generator{
 public:

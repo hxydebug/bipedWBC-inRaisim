@@ -19,6 +19,8 @@ public:
     FootHoldPlanner *foot_planner;
     Eigen::VectorXd foothold;
     Eigen::Vector3d foot_position_begin;
+    Eigen::Vector3d foothold_heuristic;
+    Eigen::Vector3d foothold_dcm;
 private:
     Eigen::VectorXd pGain,dGain;
     gait_generator *_gait_generator;
@@ -43,6 +45,7 @@ Eigen::VectorXd pd_tau(Eigen::VectorXd pA,Eigen::VectorXd vA,Eigen::VectorXd pT,
 
 // add the cycloid
 Eigen::VectorXd simple_cal_p(float p_start, float p_end, float period, float t_whole, bool isZ);
+Eigen::VectorXd simple_cal_p1(float p_start, float p_end, float period, float t_whole, bool isdown, float tt);
 Position get_swing_foot_trajectory(float input_phase, Position start_pos, Position end_pos);
 Eigen::Vector3d get_swing_foot_trajectory(float input_phase, Eigen::Vector3d start_pos, Eigen::Vector3d end_pos);
 Position get_swing_foot_trajectory1(float input_phase, Position start_pos, Position end_pos);

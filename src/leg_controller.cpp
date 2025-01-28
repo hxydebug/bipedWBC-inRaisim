@@ -67,7 +67,7 @@ Eigen::VectorXd leg_controller::control_body_directly(Eigen::Vector3d p_com_des,
   // std::cout<<"height:"<<p_com[2]<<std::endl;
   // std::cout<<"velocity:"<<dp_com.transpose()<<std::endl;
   Eigen::Matrix3d com_rotm_des = rpy2romatrix(w_com_des[0],w_com_des[1],w_com_des[2]);
-  Eigen::Vector3d kp_p(0,0,0);
+  Eigen::Vector3d kp_p(1500,1500,1500);
   Eigen::Vector3d kd_p(0,0,0);
   // Eigen::Vector3d kp_w(1500,1500,1500);
   // Eigen::Vector3d kd_w(50,50,50);

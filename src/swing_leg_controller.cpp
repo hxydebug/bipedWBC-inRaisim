@@ -141,10 +141,15 @@ Eigen::VectorXd swing_leg_controller::get_action(Eigen::VectorXd user_cmd){
       foothold = foot_planner->ComputeNextfootHold(Nsteps,b0x,b0y,_gait_generator->leg_state[1],foot_position_begin[0],foot_position_begin[1],_gait_generator->normalized_phase[0]);
       foot_target_position[0] = foot_position_begin[0] + foothold[0];
       foot_target_position[1] = foot_position_begin[1] + foothold[1];
+      // foothold_dcm[0] = foot_position_begin[0] + foothold[0];
+      // foothold_dcm[1] = foot_position_begin[1] + foothold[1];
       // modify to desired height
       // foot_target_position[2] = 0;
       foot_target_position[2] = p_com[2]-desired_height;
-      // std::cout<< _gait_generator->normalized_phase[i] <<std::endl;
+
+      // foothold_dcm[2] = foot_target_position[2];
+      // foothold_heuristic = foot_target_position;
+
       // get beginning foot position in world frame
       foot_position_now[i] = get_swing_foot_trajectory(_gait_generator->normalized_phase[i],foot_position_begin,foot_target_position);
 
@@ -265,6 +270,24 @@ Eigen::VectorXd simple_cal_p(float p_start, float p_end, float period, float t_w
   ans << p_des, v_des, a_des;
   return ans;
 }
+
+Eigen::VectorXd simple_cal_p1(float p_start, float p_end, float period, float t_whole, bool isdown, float tt){
+
+  period = period * t_whole;
+
+  if (isdown) {
+    t_whole = t_whole * (1-tt);
+  }
+  else{
+    t_whole = t_whole * tt;
+  }
+  float p_des = p_start + (p_end - p_start) * (period / t_whole - sin(2 * PII * period / t_whole) / (2 * PII));
+  float v_des = (p_end - p_start) / t_whole * (1 - cos(2 * PII * period / t_whole));
+  float a_des = 2 * PII * sin(2 * PII * period / t_whole)*(p_end - p_start) / (t_whole * t_whole);
+  Eigen::Vector3d ans;
+  ans << p_des, v_des, a_des;
+  return ans;
+}
 Position get_swing_foot_trajectory(float input_phase, Position start_pos, Position end_pos){
   float phase = input_phase;
 
@@ -278,12 +301,12 @@ Position get_swing_foot_trajectory(float input_phase, Position start_pos, Positi
 
   float max_clearance = 0.1;
   float mid = std::max(end_pos.z, start_pos.z) + max_clearance;
-  
-  if (phase < 0.5) {
-    p_z = simple_cal_p(start_pos.z, mid, phase, t_swing, true);
+  double tt = 0.5;
+  if (phase < tt) {                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  
+    p_z = simple_cal_p1(start_pos.z, mid, phase, t_swing, false, tt);
   }
   else {
-    p_z = simple_cal_p(mid, end_pos.z, phase-0.5, t_swing, true);
+    p_z = simple_cal_p1(mid, end_pos.z, phase-tt, t_swing, true, tt);
   }
   pos.x = p_x[0];
   pos.y = p_y[0];
@@ -310,11 +333,18 @@ Eigen::Vector3d get_swing_foot_trajectory(float input_phase, Eigen::Vector3d sta
   float max_clearance = 0.1;
   float mid = std::max(end_pos[2], start_pos[2]) + max_clearance;
   
-  if (phase < 0.5) {
-    p_z = simple_cal_p(start_pos[2], mid, phase, t_swing, true);
+  // if (phase < 0.5) {
+  //   p_z = simple_cal_p(start_pos[2], mid, phase, t_swing, true);
+  // }
+  // else {
+  //   p_z = simple_cal_p(mid, end_pos[2], phase-0.5, t_swing, true);
+  // }
+  float tt = 0.2;
+  if (phase < tt) {
+    p_z = simple_cal_p1(start_pos[2], mid, phase, t_swing, false, tt);
   }
   else {
-    p_z = simple_cal_p(mid, end_pos[2], phase-0.5, t_swing, true);
+    p_z = simple_cal_p1(mid, end_pos[2], phase-tt, t_swing, true, tt);
   }
   pos[0] = p_x[0];
   pos[1] = p_y[0];
