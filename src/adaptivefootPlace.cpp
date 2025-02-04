@@ -67,21 +67,23 @@ Eigen::VectorXd FootHoldPlanner::ComputeNextfootHold(int Nsteps,
                 B_aux.block(power * 1, 0, 1, 1);
         }
     }
-    // footplacements_Xs = FootHoldPlanner::optimalLongitudinalFootPlacement(Nsteps, dcmOffsetX);
-    // footplacements_Ys = FootHoldPlanner::optimalLateralFootPlacement(Nsteps, dcmOffsetY);
+    footplacements_Xs = FootHoldPlanner::optimalLongitudinalFootPlacement(Nsteps, dcmOffsetX);
+    footplacements_Ys = FootHoldPlanner::optimalLateralFootPlacement(Nsteps, dcmOffsetY);
     Eigen::VectorXd footHold = Eigen::VectorXd::Zero(2);
-    // footHold << footplacements_Xs[0], footplacements_Ys[0];
-    double learning_rate1 = 0.01;
-    double learning_rate2 = 0.01;
-    if(currentStancefoot_ID == 0){
-        // right leg swing
-        footHold << (dcmOffsetX-dcmXSteady)*(FootHoldPlanner::deltaTransformation(leftoverTime)-learning_rate1)+stepLengthSteady, (dcmOffsetY-dcmYSteady)*(FootHoldPlanner::deltaTransformation(leftoverTime)-learning_rate2)-stepWidthSteady;
+    footHold << footplacements_Xs[0], footplacements_Ys[0];
+    // double learning_rate1 = 0.01;
+    // double learning_rate2 = 0.01;
+    // if(currentStancefoot_ID == 0){
+    //     // right leg swing
+    //     footHold << (dcmOffsetX-dcmXSteady)*(FootHoldPlanner::deltaTransformation(leftoverTime)-learning_rate1)+stepLengthSteady, (dcmOffsetY-dcmYSteady)*(FootHoldPlanner::deltaTransformation(leftoverTime)-learning_rate2)-stepWidthSteady;
+    //     // footHold << (dcmOffsetX)*(FootHoldPlanner::deltaTransformation(leftoverTime))-dcmXSteady, (dcmOffsetY)*(FootHoldPlanner::deltaTransformation(leftoverTime))-dcmYSteady;
     
-    }
-    else{
-        footHold << (dcmOffsetX-dcmXSteady)*(FootHoldPlanner::deltaTransformation(leftoverTime)-learning_rate1)+stepLengthSteady, (dcmOffsetY+dcmYSteady)*(FootHoldPlanner::deltaTransformation(leftoverTime)-learning_rate2)+stepWidthSteady;
+    // }
+    // else{
+    //     footHold << (dcmOffsetX-dcmXSteady)*(FootHoldPlanner::deltaTransformation(leftoverTime)-learning_rate1)+stepLengthSteady, (dcmOffsetY+dcmYSteady)*(FootHoldPlanner::deltaTransformation(leftoverTime)-learning_rate2)+stepWidthSteady;
+    //     // footHold << (dcmOffsetX)*(FootHoldPlanner::deltaTransformation(leftoverTime))-dcmXSteady, (dcmOffsetY)*(FootHoldPlanner::deltaTransformation(leftoverTime))+dcmYSteady;
     
-    }
+    // }
     return footHold;
 }
 
@@ -104,8 +106,8 @@ Eigen::VectorXd FootHoldPlanner::optimalLongitudinalFootPlacement(int Nsteps, do
     x_ref.setConstant(dcmXSteady);
     Eigen::VectorXd u_ref = Eigen::VectorXd::Zero(Nsteps);
     u_ref.setConstant(stepLengthSteady);
-    Eigen::MatrixXd Q = Eigen::MatrixXd::Identity(Nsteps, Nsteps) * 1.0 * 1e-3;
-    Eigen::MatrixXd R = Eigen::MatrixXd::Identity(Nsteps, Nsteps) * 1.0 * 1e3;
+    Eigen::MatrixXd Q = Eigen::MatrixXd::Identity(Nsteps, Nsteps) * 1.0 * 1e3;
+    Eigen::MatrixXd R = Eigen::MatrixXd::Identity(Nsteps, Nsteps) * 1.0 * 1e-3;
     Eigen::MatrixXd eigen_qp_H = R + B_qp.transpose() * Q * B_qp;
     Eigen::MatrixXd eigen_qp_A = B_qp;
     Eigen::MatrixXd eigen_qp_g = B_qp.transpose() * Q * (A_qp * x0 - x_ref) - R * u_ref;
@@ -194,8 +196,8 @@ Eigen::VectorXd FootHoldPlanner::optimalLateralFootPlacement(int Nsteps, double 
         }
     }
     
-    Eigen::MatrixXd Q = Eigen::MatrixXd::Identity(Nsteps, Nsteps) * 1.0 * 1e-3;
-    Eigen::MatrixXd R = Eigen::MatrixXd::Identity(Nsteps, Nsteps) * 1.0 * 1e3;
+    Eigen::MatrixXd Q = Eigen::MatrixXd::Identity(Nsteps, Nsteps) * 1.0 * 1e3;
+    Eigen::MatrixXd R = Eigen::MatrixXd::Identity(Nsteps, Nsteps) * 1.0 * 1e-3;
     Eigen::MatrixXd eigen_qp_H = R + B_qp.transpose() * Q * B_qp;
     Eigen::MatrixXd eigen_qp_A = B_qp;
     Eigen::MatrixXd eigen_qp_g = B_qp.transpose() * Q * (A_qp * x0 - x_ref)  - R * u_ref;

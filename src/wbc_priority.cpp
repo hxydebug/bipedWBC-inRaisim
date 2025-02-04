@@ -372,10 +372,10 @@ void WBC_priority::computeDdq(Pin_KinDyn &pinKinDynIn) {
         kin_tasks_walk.taskLib[id].ddxDes = Eigen::VectorXd::Zero(6);
         kin_tasks_walk.taskLib[id].dxDes = Eigen::VectorXd::Zero(6);
         kin_tasks_walk.taskLib[id].kp = Eigen::MatrixXd::Identity(6, 6) * 500;
-        // kin_tasks_walk.taskLib[id].kp.block(3,3,3,3)=Eigen::MatrixXd::Identity(3, 3) * 400;
+        kin_tasks_walk.taskLib[id].kp.block(0,0,2,2)=Eigen::MatrixXd::Identity(2, 2) * 0.0;
         // kin_tasks_walk.taskLib[id].kp.block<1, 1>(2, 2)=Eigen::MatrixXd::Identity(1, 1) * 2000;
         kin_tasks_walk.taskLib[id].kd = Eigen::MatrixXd::Identity(6, 6) * 10;
-        // kin_tasks_walk.taskLib[id].kd.block(3,3,3,3)=Eigen::MatrixXd::Identity(3, 3) * 100;
+        kin_tasks_walk.taskLib[id].kd.block(0,0,2,2)=Eigen::MatrixXd::Identity(2, 2) * 0.0;
         // kin_tasks_walk.taskLib[id].kd.block<1, 1>(2, 2)=Eigen::MatrixXd::Identity(1, 1) * 100;
         kin_tasks_walk.taskLib[id].J = J_base;
         kin_tasks_walk.taskLib[id].dJ = dJ_base;

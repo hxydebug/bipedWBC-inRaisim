@@ -185,7 +185,7 @@ Eigen::VectorXd stance_leg_controller::get_action(Eigen::VectorXd user_cmd){
     float m = 10.3;
 
     //I_b to I_w
-    Eigen::Vector3d invI_b(1.0/0.036,1.0/0.035,1.0/0.044);//1.0/0.36,1.0/0.34,1.0/0.046
+    Eigen::Vector3d invI_b(1.0/0.01,1.0/0.01,1.0/0.01);//1.0/0.36,1.0/0.34,1.0/0.046
     Eigen::Matrix3d invI_bM = invI_b.asDiagonal();
     Eigen::Matrix3d invI_wM = rot_matrix*invI_bM*rot_matrix.transpose();
 
@@ -238,7 +238,7 @@ const float kMaxScale = 10;
 const float kMinScale = 0.1;
 float body_mass = 10.3;
 float alpha = 0.000001;
-const std::vector<double> qp_weights {5,8,18, 3,3,80, 0.1,0.5,1, 3,1,1, 0}; // w,p,dw,dp,g
+const std::vector<double> qp_weights {15,18,15, 0,0,80, 0.5,0.5,0.5, 0,0,1, 0}; // w,p,dw,dp,g
 std::vector<float> foot_friction_coeffs {0.45,0.45,0.45,0.45};
 // For tune the robot, I think the important parameters are Ineria, weight, swing leg position offset, physic com, measured com respect to base(especially x offset,in simulation 0.02->0.01 is better since the thigh push the mass a little bit back. note that the origin position is from the root of thigh).
 ConvexMpc::ConvexMpc()
@@ -325,46 +325,36 @@ std::vector<double> ConvexMpc::ComputeContactForces(
     }
 
     
-    int i = 0;
-    for(int j = 0; j < 3; j++){
-        if(fabs(des_state_[6+j]) < 0.0001){
-            desired_states_[i * kStateDim + j] = des_state_[j] + des_state_[6+j] * (i + 1) * timestep;
-        }
-        else{
-            desired_states_[i * kStateDim + j] = state_[j] + des_state_[6+j] * (i + 1) * timestep;
-        }
-        desired_states_[i * kStateDim + 6 + j] = des_state_[6+j];
-    }
-    for(int j = 3; j < 5; j++){
-        desired_states_[i * kStateDim + j] = state_[j] + state_[6+j] * (i + 1) * timestep;
-        desired_states_[i * kStateDim + 6 + j] = state_[6+j] + g_h*(state_[j]-stance_foot_p[j-3]) * timestep;
-    }
+    // int i = 0;
+    // for(int j = 0; j < 3; j++){
+    //     if(fabs(des_state_[6+j]) < 0.0001){
+    //         desired_states_[i * kStateDim + j] = des_state_[j] + des_state_[6+j] * (i + 1) * timestep;
+    //     }
+    //     else{
+    //         desired_states_[i * kStateDim + j] = state_[j] + des_state_[6+j] * (i + 1) * timestep;
+    //     }
+    //     desired_states_[i * kStateDim + 6 + j] = des_state_[6+j];
+    // }
+    // for(int j = 3; j < 5; j++){
+    //     desired_states_[i * kStateDim + j] = state_[j] + state_[6+j] * (i + 1) * timestep;
+    //     desired_states_[i * kStateDim + 6 + j] = state_[6+j] + g_h*(state_[j]-stance_foot_p[j-3]) * timestep;
+    // }
 
-    int hh = 5;
-    if(fabs(des_state_[6+hh]) < 0.0001){
-        desired_states_[i * kStateDim + hh] = des_state_[hh] + des_state_[6+hh] * (i + 1) * timestep;
-    }
-    else{
-        desired_states_[i * kStateDim + hh] = state_[hh] + des_state_[6+hh] * (i + 1) * timestep;
-    }
-    desired_states_[i * kStateDim + 6 + hh] = des_state_[6+hh];
+    // int hh = 5;
+    // if(fabs(des_state_[6+hh]) < 0.0001){
+    //     desired_states_[i * kStateDim + hh] = des_state_[hh] + des_state_[6+hh] * (i + 1) * timestep;
+    // }
+    // else{
+    //     desired_states_[i * kStateDim + hh] = state_[hh] + des_state_[6+hh] * (i + 1) * timestep;
+    // }
+    // desired_states_[i * kStateDim + 6 + hh] = des_state_[6+hh];
 
 
-    desired_states_[i * kStateDim + 12] = -kGravity;
+    // desired_states_[i * kStateDim + 12] = -kGravity;
       
-    for (int i = 1; i < planning_horizon; ++i) {
+    for (int i = 0; i < planning_horizon; ++i) {
 
-        // for(int j = 0; j < 6; j++){
-        //     if(fabs(des_state_[6+j]) < 0.0001){
-        //         desired_states_[i * kStateDim + j] = des_state_[j] + des_state_[6+j] * (i + 1) * timestep;
-        //     }
-        //     else{
-        //         desired_states_[i * kStateDim + j] = state_[j] + des_state_[6+j] * (i + 1) * timestep;
-        //     }
-        //     desired_states_[i * kStateDim + 6 + j] = des_state_[6+j];
-        // }
-
-        for(int j = 0; j < 3; j++){
+        for(int j = 0; j < 6; j++){
             if(fabs(des_state_[6+j]) < 0.0001){
                 desired_states_[i * kStateDim + j] = des_state_[j] + des_state_[6+j] * (i + 1) * timestep;
             }
@@ -373,19 +363,29 @@ std::vector<double> ConvexMpc::ComputeContactForces(
             }
             desired_states_[i * kStateDim + 6 + j] = des_state_[6+j];
         }
-        for(int j = 3; j < 5; j++){
-            desired_states_[i * kStateDim + j] = desired_states_[(i-1) * kStateDim + j] + desired_states_[(i-1) * kStateDim + 6 + j] * timestep;
-            desired_states_[i * kStateDim + 6 + j] = desired_states_[(i-1) * kStateDim + 6 + j] + g_h*(desired_states_[(i-1) * kStateDim + j]-stance_foot_p[j-3]);
-        }
 
-        int hh = 5;
-        if(fabs(des_state_[6+hh]) < 0.0001){
-            desired_states_[i * kStateDim + hh] = des_state_[hh] + des_state_[6+hh] * (i + 1) * timestep;
-        }
-        else{
-            desired_states_[i * kStateDim + hh] = state_[hh] + des_state_[6+hh] * (i + 1) * timestep;
-        }
-        desired_states_[i * kStateDim + 6 + hh] = des_state_[6+hh];
+        // for(int j = 0; j < 3; j++){
+        //     if(fabs(des_state_[6+j]) < 0.0001){
+        //         desired_states_[i * kStateDim + j] = des_state_[j] + des_state_[6+j] * (i + 1) * timestep;
+        //     }
+        //     else{
+        //         desired_states_[i * kStateDim + j] = state_[j] + des_state_[6+j] * (i + 1) * timestep;
+        //     }
+        //     desired_states_[i * kStateDim + 6 + j] = des_state_[6+j];
+        // }
+        // for(int j = 3; j < 5; j++){
+        //     desired_states_[i * kStateDim + j] = desired_states_[(i-1) * kStateDim + j] + desired_states_[(i-1) * kStateDim + 6 + j] * timestep;
+        //     desired_states_[i * kStateDim + 6 + j] = desired_states_[(i-1) * kStateDim + 6 + j] + g_h*(desired_states_[(i-1) * kStateDim + j]-stance_foot_p[j-3]);
+        // }
+
+        // int hh = 5;
+        // if(fabs(des_state_[6+hh]) < 0.0001){
+        //     desired_states_[i * kStateDim + hh] = des_state_[hh] + des_state_[6+hh] * (i + 1) * timestep;
+        // }
+        // else{
+        //     desired_states_[i * kStateDim + hh] = state_[hh] + des_state_[6+hh] * (i + 1) * timestep;
+        // }
+        // desired_states_[i * kStateDim + 6 + hh] = des_state_[6+hh];
 
 
         desired_states_[i * kStateDim + 12] = -kGravity;

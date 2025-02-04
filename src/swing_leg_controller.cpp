@@ -39,6 +39,7 @@ swing_leg_controller::swing_leg_controller(robot *bike,gait_generator *gait_gene
   bias_positions[0] << 0.001,wid/2+0.03,0;
   bias_positions[1] << 0.001,-wid/2-0.03,0;
   swing_leg_controller::set_PDGain();
+  stance_foot_pos.setConstant(0);
 
 }
 
@@ -119,6 +120,14 @@ Eigen::VectorXd swing_leg_controller::get_action(Eigen::VectorXd user_cmd){
       ansV.setConstant(0);
       // stance phase
       motor_torque[i] = pd_tau(legpos[i], legvel[i], angs, ansV, 0, 2);
+
+      phase_switch_foot_local_position[i] = getFootPositionInBaswFrame(licycle->get_leg_pos(),i);
+      auto pos_com_now = licycle->get_p_com();
+      Eigen::Vector3d foot_position_body;
+      foot_position_body << phase_switch_foot_local_position[i].x, phase_switch_foot_local_position[i].y, phase_switch_foot_local_position[i].z;
+      Eigen::Matrix3d com_rotm = licycle->get_com_rotmatrix();
+      stance_foot_pos = com_rotm * foot_position_body + pos_com_now;
+      
     }
     else 
     {
@@ -133,22 +142,23 @@ Eigen::VectorXd swing_leg_controller::get_action(Eigen::VectorXd user_cmd){
                                            + _KP * (linear_velocity - desired_linear_velocity);
       foot_target_position[0] += rotation_xpos_bias + p_com[0];
       foot_target_position[1] += rotation_ypos_bias + p_com[1];
-
+      foothold_heuristic[0] = foot_target_position[0];
+      foothold_heuristic[1] = foot_target_position[1];
       // use adaptive foot placement
       int Nsteps = 5;
-      double b0x = p_com[0] + com_velocity[0]/foot_planner->omega - foot_position_begin[0];
-      double b0y = p_com[1] + com_velocity[1]/foot_planner->omega - foot_position_begin[1];
-      foothold = foot_planner->ComputeNextfootHold(Nsteps,b0x,b0y,_gait_generator->leg_state[1],foot_position_begin[0],foot_position_begin[1],_gait_generator->normalized_phase[0]);
-      foot_target_position[0] = foot_position_begin[0] + foothold[0];
-      foot_target_position[1] = foot_position_begin[1] + foothold[1];
-      // foothold_dcm[0] = foot_position_begin[0] + foothold[0];
-      // foothold_dcm[1] = foot_position_begin[1] + foothold[1];
+      double b0x = p_com[0] + com_velocity[0]/foot_planner->omega - stance_foot_pos[0];
+      double b0y = p_com[1] + com_velocity[1]/foot_planner->omega - stance_foot_pos[1];
+      foothold = foot_planner->ComputeNextfootHold(Nsteps,b0x,b0y,_gait_generator->leg_state[1],stance_foot_pos[0],stance_foot_pos[1],_gait_generator->normalized_phase[0]);
+      foot_target_position[0] = stance_foot_pos[0] + foothold[0];
+      foot_target_position[1] = stance_foot_pos[1] + foothold[1];
+      // foothold_dcm[0] = stance_foot_pos[0] + foothold[0];
+      // foothold_dcm[1] = stance_foot_pos[1] + foothold[1];
       // modify to desired height
       // foot_target_position[2] = 0;
       foot_target_position[2] = p_com[2]-desired_height;
 
-      // foothold_dcm[2] = foot_target_position[2];
-      // foothold_heuristic = foot_target_position;
+      foothold_heuristic[2] = foot_target_position[2];
+      foothold_dcm = foot_target_position;
 
       // get beginning foot position in world frame
       foot_position_now[i] = get_swing_foot_trajectory(_gait_generator->normalized_phase[i],foot_position_begin,foot_target_position);
@@ -333,19 +343,19 @@ Eigen::Vector3d get_swing_foot_trajectory(float input_phase, Eigen::Vector3d sta
   float max_clearance = 0.1;
   float mid = std::max(end_pos[2], start_pos[2]) + max_clearance;
   
-  // if (phase < 0.5) {
-  //   p_z = simple_cal_p(start_pos[2], mid, phase, t_swing, true);
-  // }
-  // else {
-  //   p_z = simple_cal_p(mid, end_pos[2], phase-0.5, t_swing, true);
-  // }
-  float tt = 0.2;
-  if (phase < tt) {
-    p_z = simple_cal_p1(start_pos[2], mid, phase, t_swing, false, tt);
+  if (phase < 0.5) {
+    p_z = simple_cal_p(start_pos[2], mid, phase, t_swing, true);
   }
   else {
-    p_z = simple_cal_p1(mid, end_pos[2], phase-tt, t_swing, true, tt);
+    p_z = simple_cal_p(mid, end_pos[2], phase-0.5, t_swing, true);
   }
+  // float tt = 0.2;
+  // if (phase < tt) {
+  //   p_z = simple_cal_p1(start_pos[2], mid, phase, t_swing, false, tt);
+  // }
+  // else {
+  //   p_z = simple_cal_p1(mid, end_pos[2], phase-tt, t_swing, true, tt);
+  // }
   pos[0] = p_x[0];
   pos[1] = p_y[0];
   pos[2] = p_z[0];

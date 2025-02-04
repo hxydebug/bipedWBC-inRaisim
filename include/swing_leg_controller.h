@@ -16,6 +16,7 @@ public:
     Position postarget[2];
     float desired_xspeed;
     Eigen::Vector3d foot_position_now[2];
+    Eigen::Vector3d stance_foot_pos;
     FootHoldPlanner *foot_planner;
     Eigen::VectorXd foothold;
     Eigen::Vector3d foot_position_begin;
