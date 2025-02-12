@@ -1,7 +1,7 @@
 #include "swing_leg_controller.h"
 
 float _KP = 0.05;
-float foot_clearance = 0.01;
+float foot_clearance = 0.018;
 float desired_height = 0.565;
 float t_swing = stance_t;
 Eigen::Vector3d dP;
@@ -56,6 +56,11 @@ void swing_leg_controller::update(float current_time){
       foot_position_body << phase_switch_foot_local_position[i].x, phase_switch_foot_local_position[i].y, phase_switch_foot_local_position[i].z;
       Eigen::Matrix3d com_rotm = licycle->get_com_rotmatrix();
       foot_position_begin = com_rotm * foot_position_body + pos_com_last;
+
+      phase_switch_foot_local_position[1-i] = getFootPositionInBaswFrame(licycle->get_leg_pos(),1-i);
+      auto pos_com_now = licycle->get_p_com();
+      foot_position_body << phase_switch_foot_local_position[1-i].x, phase_switch_foot_local_position[1-i].y, phase_switch_foot_local_position[1-i].z;
+      stance_foot_pos = com_rotm * foot_position_body + pos_com_now;
     }
   }
 
@@ -148,14 +153,14 @@ Eigen::VectorXd swing_leg_controller::get_action(Eigen::VectorXd user_cmd){
       int Nsteps = 5;
       double b0x = p_com[0] + com_velocity[0]/foot_planner->omega - stance_foot_pos[0];
       double b0y = p_com[1] + com_velocity[1]/foot_planner->omega - stance_foot_pos[1];
-      foothold = foot_planner->ComputeNextfootHold(Nsteps,b0x,b0y,_gait_generator->leg_state[1],stance_foot_pos[0],stance_foot_pos[1],_gait_generator->normalized_phase[0]);
+      foothold = foot_planner->ComputeNextfootHold(Nsteps,b0x,b0y,_gait_generator->leg_state[1],stance_foot_pos[0],stance_foot_pos[1],_gait_generator->normalized_phase[0],user_cmd[2],foot_planner->stepDuration,foot_planner->averageSpeedX);
       foot_target_position[0] = stance_foot_pos[0] + foothold[0];
       foot_target_position[1] = stance_foot_pos[1] + foothold[1];
       // foothold_dcm[0] = stance_foot_pos[0] + foothold[0];
       // foothold_dcm[1] = stance_foot_pos[1] + foothold[1];
       // modify to desired height
       // foot_target_position[2] = 0;
-      foot_target_position[2] = p_com[2]-desired_height;
+      foot_target_position[2] = p_com[2]-(desired_height-foot_clearance);
 
       foothold_heuristic[2] = foot_target_position[2];
       foothold_dcm = foot_target_position;

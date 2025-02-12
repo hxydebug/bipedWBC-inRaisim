@@ -19,7 +19,10 @@ public:
                                         int currentStancefootID,
                                         double currentStancefootPositionX,
                                         double currentStancefootPositionY,
-                                        double phase);
+                                        double phase,
+                                        double comHeight,
+                                        double stepPeriod,
+                                        double averageSpeed);
     double deltaTransformation(double timeDuration);
     void getStanceFootSequence(int Nsteps, int currentStanceFoot);
     Eigen::VectorXd optimalLongitudinalFootPlacement(int Nsteps, double dcmOffsetX);
@@ -36,12 +39,12 @@ public:
     int currentStancefoot_ID;
     double currentStancefootPosition_X;
     double currentStancefootPosition_Y;
+    double averageSpeedX; // average longitudinal speed
+    double stepDuration; // time length of each step
 
 private:
     double g; // 9.8
     double h; // com height
-    double stepDuration; // time length of each step
-    double averageSpeedX; // average longitudinal speed
     double stepLengthSteady;
     double stepWidthSteady;
     

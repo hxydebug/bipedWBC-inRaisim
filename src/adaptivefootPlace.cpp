@@ -29,8 +29,21 @@ Eigen::VectorXd FootHoldPlanner::ComputeNextfootHold(int Nsteps,
                                         int currentStancefootID,
                                         double currentStancefootPositionX,
                                         double currentStancefootPositionY,
-                                        double phase)
-{
+                                        double phase,
+                                        double comHeight,
+                                        double stepPeriod,
+                                        double averageSpeed)
+{   
+    // some variables
+    h = comHeight;
+    omega = sqrt(g/h);
+    stepDuration = stepPeriod;
+    averageSpeedX = averageSpeed;
+    stepLengthSteady = averageSpeedX * stepDuration;
+    // calculate dcm offset
+    dcmXSteady = stepLengthSteady/(FootHoldPlanner::deltaTransformation(stepDuration) -1);
+    dcmYSteady = stepWidthSteady/(FootHoldPlanner::deltaTransformation(stepDuration) +1);
+
     currentStancefoot_ID = currentStancefootID;
     currentStancefootPosition_X = currentStancefootPositionX;
     currentStancefootPosition_Y = currentStancefootPositionY;
@@ -106,7 +119,7 @@ Eigen::VectorXd FootHoldPlanner::optimalLongitudinalFootPlacement(int Nsteps, do
     x_ref.setConstant(dcmXSteady);
     Eigen::VectorXd u_ref = Eigen::VectorXd::Zero(Nsteps);
     u_ref.setConstant(stepLengthSteady);
-    Eigen::MatrixXd Q = Eigen::MatrixXd::Identity(Nsteps, Nsteps) * 1.0 * 1e3;
+    Eigen::MatrixXd Q = Eigen::MatrixXd::Identity(Nsteps, Nsteps) * 1.0 * 1e1;
     Eigen::MatrixXd R = Eigen::MatrixXd::Identity(Nsteps, Nsteps) * 1.0 * 1e-3;
     Eigen::MatrixXd eigen_qp_H = R + B_qp.transpose() * Q * B_qp;
     Eigen::MatrixXd eigen_qp_A = B_qp;
@@ -196,7 +209,7 @@ Eigen::VectorXd FootHoldPlanner::optimalLateralFootPlacement(int Nsteps, double 
         }
     }
     
-    Eigen::MatrixXd Q = Eigen::MatrixXd::Identity(Nsteps, Nsteps) * 1.0 * 1e3;
+    Eigen::MatrixXd Q = Eigen::MatrixXd::Identity(Nsteps, Nsteps) * 1.0 * 1e1;
     Eigen::MatrixXd R = Eigen::MatrixXd::Identity(Nsteps, Nsteps) * 1.0 * 1e-3;
     Eigen::MatrixXd eigen_qp_H = R + B_qp.transpose() * Q * B_qp;
     Eigen::MatrixXd eigen_qp_A = B_qp;

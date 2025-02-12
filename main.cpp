@@ -57,7 +57,7 @@ int main(int argc, char* argv[]) {
 
   ///controller init
   gait_generator gait_gen(&robot);
-  FootHoldPlanner footplanner(0.45, 0.25, 0.5, 0.12);
+  FootHoldPlanner footplanner(0.5, 0.25, 0.5, 0.12);
  	swing_leg_controller swc(&robot,&gait_gen,&footplanner,0);
  	stance_leg_controller stc(&robot,&gait_gen,0);
   leg_controller l_control(&robot,&gait_gen,&swc,&stc);
@@ -74,7 +74,7 @@ int main(int argc, char* argv[]) {
   Eigen::VectorXd user_cmd(4),interface_cmd(4);
   float global_timer = 0;
 
-  user_cmd<< 0.2,0.0,0.45,0.0;   //vx,vy,height,dyaw
+  user_cmd<< 0.5,0.0,0.5,0.0;   //vx,vy,height,dyaw
   interface_cmd = user_cmd;   //vx,vy,height,dyaw
   double x_com_desire=0.0;
   double y_com_desire=0.0;
@@ -82,6 +82,7 @@ int main(int argc, char* argv[]) {
   
   // calculate running time for wbc
   Timer t;
+  
 
   while(1){
     raisim::MSLEEP(5);
@@ -129,13 +130,13 @@ int main(int argc, char* argv[]) {
     RobotState.base_pos_des << x_com_desire, y_com_desire, user_cmd[2];
 
     // adjust des_delata_q, des_dq and des_ddq to achieve forward walking
-    // float g_h = 9.8/0.45;
-    // interface_cmd[0] = RobotState.dq(0) + 0.001 * g_h*(RobotState.q(0)-swc.stance_foot_pos[0]);
-    // interface_cmd[1] = RobotState.dq(1) + 0.001 * g_h*(RobotState.q(1)-swc.stance_foot_pos[1]);
+    float g_h = 9.8/interface_cmd[2];
+    interface_cmd[0] = RobotState.dq(0) + 0.001 * g_h*(RobotState.q(0)-swc.stance_foot_pos[0]);
+    interface_cmd[1] = RobotState.dq(1) + 0.001 * g_h*(RobotState.q(1)-swc.stance_foot_pos[1]);
     leg_tau = l_control.get_action(2,interface_cmd);
     l_control.dataBusWrite(RobotState);
     if (global_timer>0.5) {
-        RobotState.des_delta_q.block<2, 1>(0, 0) << RobotState.dq(0) *0.001, RobotState.dq(1) * 0.001;
+        RobotState.des_delta_q.block<2, 1>(0, 0) << interface_cmd[0] *0.001, interface_cmd[1] * 0.001;
         RobotState.des_delta_q(5) = interface_cmd[3] * 0.001;
         RobotState.des_dq.block<2, 1>(0, 0) <<  interface_cmd[0] ,  interface_cmd[1] ;
         RobotState.des_dq(5) = interface_cmd[3];
@@ -213,8 +214,8 @@ int main(int argc, char* argv[]) {
     //          << stc.states[3] << ", " << stc.states[4] << ", " <<stc.states[5] << ", "
     //          << footplanner.currentStancefootPosition_X << ", " << footplanner.currentStancefootPosition_Y << ", " << footplanner.currentStancefoot_ID
     //          << std::endl;
-    std::cout<< swc.stance_foot_pos[1]<<std::endl;
-    std::cout<< RobotState.stance_fe_pos_cur_W[1]<<std::endl;
+    // std::cout<< swc.stance_foot_pos[1]<<std::endl;
+    // std::cout<< RobotState.stance_fe_pos_cur_W[1]<<std::endl;
     dataFile << swc.foothold_dcm[0] << ", " << swc.foothold_dcm[1] << ", " << swc.foothold_dcm[2] << ", "
              << swc.foothold_heuristic[0] << ", " << swc.foothold_heuristic[1] << ", " << swc.foothold_heuristic[2] << ", "
              << stc.states[3] << ", " << stc.states[4] << ", " <<stc.states[5] << ", "
@@ -222,7 +223,13 @@ int main(int argc, char* argv[]) {
              << swc.foot_position_now[0][0] << ", " << swc.foot_position_now[0][1] << ", " << swc.foot_position_now[0][2] << ", "
              << swc.foot_position_now[1][0] << ", " << swc.foot_position_now[1][1] << ", " << swc.foot_position_now[1][2] << ", "
              << stc.states[9] << ", " << stc.states[10] << ", " 
-             << RobotState.q(0)-swc.stance_foot_pos[0] << ", " << RobotState.q(1)-swc.stance_foot_pos[1] << ", " 
+             << (RobotState.q(0)-swc.stance_foot_pos[0])*9.8/interface_cmd[2] << ", " << (RobotState.q(1)-swc.stance_foot_pos[1])*9.8/interface_cmd[2] << ", " 
+             << RobotState.fe_r_pos_W[0] << ", "<< RobotState.fe_r_pos_W[1] << ", "<< RobotState.fe_r_pos_W[2] << ", " 
+             << RobotState.fe_l_pos_W[0] << ", "<< RobotState.fe_l_pos_W[1] << ", "<< RobotState.fe_l_pos_W[2] << ", "
+             << footplanner.footplacements_Xs[0] << ", " << footplanner.footplacements_Xs[1] << ", " << footplanner.footplacements_Xs[2] << ", " << footplanner.footplacements_Xs[3] << ", " << footplanner.footplacements_Xs[4] << ", "
+             << footplanner.footplacements_Ys[0] << ", " << footplanner.footplacements_Ys[1] << ", " << footplanner.footplacements_Ys[2] << ", " << footplanner.footplacements_Ys[3] << ", " << footplanner.footplacements_Ys[4] << ", "
+             << swc.stance_foot_pos[0] << ", "<< swc.stance_foot_pos[1] << ", "
+             << gait_gen.leg_state[1] << ", "<< gait_gen.normalized_phase[0] << ", "
              << std::endl;
 
              
