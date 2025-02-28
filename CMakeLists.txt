@@ -18,6 +18,8 @@ add_definitions(-D_GLIBCXX_USE_CXX11_ABI=1)  # 或 0 视情况而定
 
 find_package(raisim CONFIG REQUIRED)
 find_package(Eigen3 REQUIRED)
+include_directories(${EIGEN3_INCLUDE_DIR})
+message("EIGEN3_INCLUDE_DIR: " ${EIGEN3_INCLUDE_DIR})
 find_package(jsoncpp REQUIRED)
 
 set(QPOASES_INLUDE_DIRS /usr/local/include/qpOASES)

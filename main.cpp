@@ -57,7 +57,7 @@ int main(int argc, char* argv[]) {
 
   ///controller init
   gait_generator gait_gen(&robot);
-  FootHoldPlanner footplanner(0.5, 0.25, 0.5, 0.12);
+  FootHoldPlanner footplanner(0.5, 0.2, 0.6, 0.12); //comHeight, stepPeriod, averageSpeed, stepWidth
  	swing_leg_controller swc(&robot,&gait_gen,&footplanner,0);
  	stance_leg_controller stc(&robot,&gait_gen,0);
   leg_controller l_control(&robot,&gait_gen,&swc,&stc);
@@ -71,10 +71,10 @@ int main(int argc, char* argv[]) {
 
   Eigen::VectorXd leg_tau;
   Eigen::VectorXd body_tau;
-  Eigen::VectorXd user_cmd(4),interface_cmd(4);
+  Eigen::VectorXd user_cmd(5),interface_cmd(5);
   float global_timer = 0;
 
-  user_cmd<< 0.5,0.0,0.5,0.0;   //vx,vy,height,dyaw
+  user_cmd<< 0.6,0.0,0.5,0.0,0.2;   //vx,vy,height,dyaw,time_duration
   interface_cmd = user_cmd;   //vx,vy,height,dyaw
   double x_com_desire=0.0;
   double y_com_desire=0.0;
@@ -85,7 +85,7 @@ int main(int argc, char* argv[]) {
   
 
   while(1){
-    raisim::MSLEEP(5);
+    raisim::MSLEEP(1);
     t.start();
     // get sensor data
     robot.update_state();
@@ -100,7 +100,7 @@ int main(int argc, char* argv[]) {
     RobotState.motionState = DataBus::Walk; 
     
     Eigen::Vector3d p_com_des,w_com_des,dp_com_des,dw_com_des;
-    p_com_des<<0,0,0.45;//0.41~0.42
+    p_com_des<<0,0,0.5;//0.41~0.42
     dp_com_des<<0,0,0;
     w_com_des<<0,0,0;
     dw_com_des<<0,0,0;
@@ -114,6 +114,13 @@ int main(int argc, char* argv[]) {
     // x_com_desire +=  user_cmd[0] * 0.001;
     // y_com_desire +=  user_cmd[1] * 0.001;
     // yaw_desire += user_cmd[3] * 0.001;
+    if(global_timer>5 && gait_gen.normalized_phase[0]<0.01){
+      user_cmd[4] = 0.25;
+    } 
+    if(global_timer>10 && gait_gen.normalized_phase[0]<0.01) user_cmd[4] = 0.35;
+    if(global_timer>15 && gait_gen.normalized_phase[0]<0.01) user_cmd[4] = 0.45;
+    if(global_timer>25 && gait_gen.normalized_phase[0]<0.01) user_cmd[4] = 0.5;
+    cout<<global_timer<<endl;
     interface_cmd = user_cmd;
     // double kp = 1;
     // interface_cmd[0] += kp*(x_com_desire-RobotState.q(0));
@@ -133,7 +140,7 @@ int main(int argc, char* argv[]) {
     float g_h = 9.8/interface_cmd[2];
     interface_cmd[0] = RobotState.dq(0) + 0.001 * g_h*(RobotState.q(0)-swc.stance_foot_pos[0]);
     interface_cmd[1] = RobotState.dq(1) + 0.001 * g_h*(RobotState.q(1)-swc.stance_foot_pos[1]);
-    leg_tau = l_control.get_action(2,interface_cmd);
+    leg_tau = l_control.get_action(2,user_cmd);
     l_control.dataBusWrite(RobotState);
     if (global_timer>0.5) {
         RobotState.des_delta_q.block<2, 1>(0, 0) << interface_cmd[0] *0.001, interface_cmd[1] * 0.001;

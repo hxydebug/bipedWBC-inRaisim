@@ -13,12 +13,12 @@
 #define Lose_Contact 2
 #define Early_Contact 3
 
-#define stance_t 0.25
+#define stance_t 0.2
 
 class gait_generator{
 public:
     gait_generator(robot *bike);
-    void update(float current_time);
+    void update(float current_time, Eigen::VectorXd user_cmd);
     Eigen::Vector2d stance_duration;
     Eigen::Vector2d swing_duration;
     Eigen::Vector2d normalized_phase;

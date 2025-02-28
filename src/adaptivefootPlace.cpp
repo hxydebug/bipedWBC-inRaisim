@@ -103,10 +103,10 @@ Eigen::VectorXd FootHoldPlanner::ComputeNextfootHold(int Nsteps,
 Eigen::VectorXd FootHoldPlanner::optimalLongitudinalFootPlacement(int Nsteps, double dcmOffsetX){
     
     double x0 = dcmOffsetX;
-    double x_low = -0.5;
-    double x_high = 0.5;
-    double u_low = -0.9;
-    double u_high = 0.9;
+    double x_low = -0.1;
+    double x_high = 0.1;
+    double u_low = -0.4;
+    double u_high = 0.4;
     Eigen::VectorXd x_low_Vector = Eigen::VectorXd::Zero(Nsteps);
     Eigen::VectorXd x_high_Vector = Eigen::VectorXd::Zero(Nsteps);
     Eigen::VectorXd u_low_Vector = Eigen::VectorXd::Zero(Nsteps);
@@ -173,15 +173,15 @@ Eigen::VectorXd FootHoldPlanner::optimalLongitudinalFootPlacement(int Nsteps, do
 Eigen::VectorXd FootHoldPlanner::optimalLateralFootPlacement(int Nsteps, double dcmOffsetY){
 
     double x0 = dcmOffsetY;
-    double x_low_left = -0.5;
+    double x_low_left = -0.1;
     double x_high_left = 0;
     double x_low_right = 0;
-    double x_high_right = 0.5;
+    double x_high_right = 0.1;
 
-    double u_low_left = 0.0;
-    double u_high_left = 0.9;
-    double u_low_right = -0.9;
-    double u_high_right = -0.0;
+    double u_low_left = 0.12;
+    double u_high_left = 0.18;
+    double u_low_right = -0.18;
+    double u_high_right = -0.12;
     Eigen::VectorXd x_low_Vector = Eigen::VectorXd::Zero(Nsteps);
     Eigen::VectorXd x_high_Vector = Eigen::VectorXd::Zero(Nsteps);
     Eigen::VectorXd u_low_Vector = Eigen::VectorXd::Zero(Nsteps);

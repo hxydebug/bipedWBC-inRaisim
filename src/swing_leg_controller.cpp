@@ -153,7 +153,7 @@ Eigen::VectorXd swing_leg_controller::get_action(Eigen::VectorXd user_cmd){
       int Nsteps = 5;
       double b0x = p_com[0] + com_velocity[0]/foot_planner->omega - stance_foot_pos[0];
       double b0y = p_com[1] + com_velocity[1]/foot_planner->omega - stance_foot_pos[1];
-      foothold = foot_planner->ComputeNextfootHold(Nsteps,b0x,b0y,_gait_generator->leg_state[1],stance_foot_pos[0],stance_foot_pos[1],_gait_generator->normalized_phase[0],user_cmd[2],foot_planner->stepDuration,foot_planner->averageSpeedX);
+      foothold = foot_planner->ComputeNextfootHold(Nsteps,b0x,b0y,_gait_generator->leg_state[1],stance_foot_pos[0],stance_foot_pos[1],_gait_generator->normalized_phase[0],user_cmd[2],user_cmd[4],user_cmd[0]);
       foot_target_position[0] = stance_foot_pos[0] + foothold[0];
       foot_target_position[1] = stance_foot_pos[1] + foothold[1];
       // foothold_dcm[0] = stance_foot_pos[0] + foothold[0];

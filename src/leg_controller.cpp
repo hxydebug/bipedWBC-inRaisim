@@ -155,7 +155,7 @@ Eigen::VectorXd leg_controller::get_action(int Run_mode,Eigen::VectorXd user_cmd
   }
   else{
     // gait generator
-    gait_generate->update(timer);
+    gait_generate->update(timer,user_cmd);
 
     // ground reaction force calculate    ***** it can be put in another pthread *****
     stc_tau = stctr->get_action(user_cmd);

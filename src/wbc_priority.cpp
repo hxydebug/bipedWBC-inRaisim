@@ -357,8 +357,8 @@ void WBC_priority::computeDdq(Pin_KinDyn &pinKinDynIn) {
         id = kin_tasks_walk.getId("PosRot");
         kin_tasks_walk.taskLib[id].errX = Eigen::VectorXd::Zero(6);
         kin_tasks_walk.taskLib[id].errX.block(0,0,3,1) = base_pos_des - q.block(0,0,3,1);
-        std::cout<< "desired height: "<<base_pos_des[2]<<std::endl;
-        std::cout<< "current height: "<<q[2]<<std::endl;
+        // std::cout<< "desired height: "<<base_pos_des[2]<<std::endl;
+        // std::cout<< "current height: "<<q[2]<<std::endl;
         if (fabs(kin_tasks_walk.taskLib[id].errX(0))>=0.02)
             kin_tasks_walk.taskLib[id].errX(0)=0.02* sign(kin_tasks_walk.taskLib[id].errX(0));
         if (fabs(kin_tasks_walk.taskLib[id].errX(1))>=0.01)

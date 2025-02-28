@@ -30,7 +30,10 @@ gait_generator::gait_generator(robot *bike){
     contact_detection_phase_threshold = nominal_contact_detection_phase;
 }
 
-void gait_generator::update(float current_time){
+void gait_generator::update(float current_time, Eigen::VectorXd user_cmd){
+
+    stance_duration << user_cmd[4], user_cmd[4];
+    swing_duration = stance_duration.array() / stance_dutyrate.array() - stance_duration.array();
 
     // contact_state = licycle->GetFootContact();
     for(int i(0);i<2;i++){
