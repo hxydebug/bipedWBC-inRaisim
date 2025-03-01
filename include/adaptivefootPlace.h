@@ -32,6 +32,7 @@ public:
     Eigen::VectorXd stanceFootSeq;
     Eigen::MatrixXd A_qp;
     Eigen::MatrixXd B_qp;
+    Eigen::MatrixXd M;
     double omega; // frequency for biped walking
     double leftoverTime; // the time duration before this step finishes
     Eigen::VectorXd footplacements_Xs;
