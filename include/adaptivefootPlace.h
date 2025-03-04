@@ -29,14 +29,21 @@ public:
     Eigen::VectorXd optimalLateralFootPlacement(int Nsteps, double dcmOffsetY);
     double dcmXSteady;
     double dcmYSteady;
+    double current_dcmoffset_X;
+    double current_dcmoffset_Y;
     Eigen::VectorXd stanceFootSeq;
     Eigen::MatrixXd A_qp;
     Eigen::MatrixXd B_qp;
     Eigen::MatrixXd M;
+    Eigen::MatrixXd MM;
+    Eigen::MatrixXd NN;
+    double cbf_gamma;
     double omega; // frequency for biped walking
     double leftoverTime; // the time duration before this step finishes
     Eigen::VectorXd footplacements_Xs;
     Eigen::VectorXd footplacements_Ys;
+    Eigen::VectorXd dcmXs;
+    Eigen::VectorXd dcmYs;
     int currentStancefoot_ID;
     double currentStancefootPosition_X;
     double currentStancefootPosition_Y;

@@ -57,7 +57,7 @@ int main(int argc, char* argv[]) {
 
   ///controller init
   gait_generator gait_gen(&robot);
-  FootHoldPlanner footplanner(0.5, 0.2, 0.6, 0.12); //comHeight, stepPeriod, averageSpeed, stepWidth
+  FootHoldPlanner footplanner(0.5, 0.2, 0.5, 0.12); //comHeight, stepPeriod, averageSpeed, stepWidth
  	swing_leg_controller swc(&robot,&gait_gen,&footplanner,0);
  	stance_leg_controller stc(&robot,&gait_gen,0);
   leg_controller l_control(&robot,&gait_gen,&swc,&stc);
@@ -74,7 +74,7 @@ int main(int argc, char* argv[]) {
   Eigen::VectorXd user_cmd(5),interface_cmd(5);
   float global_timer = 0;
 
-  user_cmd<< 0.6,0.0,0.5,0.0,0.2;   //vx,vy,height,dyaw,time_duration
+  user_cmd<< 0.5,0.0,0.5,0.0,0.2;   //vx,vy,height,dyaw,time_duration
   interface_cmd = user_cmd;   //vx,vy,height,dyaw
   double x_com_desire=0.0;
   double y_com_desire=0.0;
@@ -235,8 +235,11 @@ int main(int argc, char* argv[]) {
              << RobotState.fe_l_pos_W[0] << ", "<< RobotState.fe_l_pos_W[1] << ", "<< RobotState.fe_l_pos_W[2] << ", "
              << footplanner.footplacements_Xs[0] << ", " << footplanner.footplacements_Xs[1] << ", " << footplanner.footplacements_Xs[2] << ", " << footplanner.footplacements_Xs[3] << ", " << footplanner.footplacements_Xs[4] << ", "
              << footplanner.footplacements_Ys[0] << ", " << footplanner.footplacements_Ys[1] << ", " << footplanner.footplacements_Ys[2] << ", " << footplanner.footplacements_Ys[3] << ", " << footplanner.footplacements_Ys[4] << ", "
-             << swc.stance_foot_pos[0] << ", "<< swc.stance_foot_pos[1] << ", "
-             << gait_gen.leg_state[1] << ", "<< gait_gen.normalized_phase[0] << ", "
+             << footplanner.dcmXs[0] << ", " << footplanner.dcmXs[1] << ", " << footplanner.dcmXs[2] << ", " << footplanner.dcmXs[3] << ", " << footplanner.dcmXs[4] << ", "
+             << footplanner.dcmYs[0] << ", " << footplanner.dcmYs[1] << ", " << footplanner.dcmYs[2] << ", " << footplanner.dcmYs[3] << ", " << footplanner.dcmYs[4] << ", "
+            //  << swc.stance_foot_pos[0] << ", "<< swc.stance_foot_pos[1] << ", "
+            //  << gait_gen.leg_state[1] << ", "<< gait_gen.normalized_phase[0] << ", "
+            << user_cmd[4] << ", " << footplanner.current_dcmoffset_X << ", " << footplanner.current_dcmoffset_Y
              << std::endl;
 
              
