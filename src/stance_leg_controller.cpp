@@ -185,7 +185,7 @@ Eigen::VectorXd stance_leg_controller::get_action(Eigen::VectorXd user_cmd){
     float m = 10.3;
 
     //I_b to I_w
-    Eigen::Vector3d invI_b(1.0/0.01,1.0/0.01,1.0/0.01);//1.0/0.36,1.0/0.34,1.0/0.046
+    Eigen::Vector3d invI_b(1.0/0.31,1.0/0.41,1.0/0.01);//1.0/0.36,1.0/0.34,1.0/0.046
     Eigen::Matrix3d invI_bM = invI_b.asDiagonal();
     Eigen::Matrix3d invI_wM = rot_matrix*invI_bM*rot_matrix.transpose();
 
@@ -238,7 +238,7 @@ const float kMaxScale = 10;
 const float kMinScale = 0.1;
 float body_mass = 10.3;
 float alpha = 0.000001;
-const std::vector<double> qp_weights {15,18,15, 0,0,80, 0.5,0.5,0.5, 0,0,1, 0}; // w,p,dw,dp,g
+const std::vector<double> qp_weights {55,58,15, 0,0,80, 0.5,0.5,0.5, 0,0,1, 0}; // w,p,dw,dp,g
 std::vector<float> foot_friction_coeffs {0.45,0.45,0.45,0.45};
 // For tune the robot, I think the important parameters are Ineria, weight, swing leg position offset, physic com, measured com respect to base(especially x offset,in simulation 0.02->0.01 is better since the thigh push the mass a little bit back. note that the origin position is from the root of thigh).
 ConvexMpc::ConvexMpc()

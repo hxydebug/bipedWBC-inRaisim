@@ -157,14 +157,14 @@ Eigen::VectorXd FootHoldPlanner::optimalLongitudinalFootPlacement(int Nsteps, do
     //     R.block(i,i,1,1) = Eigen::MatrixXd::Identity(1, 1) * (i*diff + 1.0*1e-3);
 
     // }
-    // Eigen::MatrixXd eigen_qp_H = R + B_qp.transpose() * Q * B_qp;
-    Eigen::MatrixXd eigen_qp_H = M.transpose() * R * M + B_qp.transpose() * Q * B_qp;
-    // Eigen::MatrixXd eigen_qp_g = B_qp.transpose() * Q * (A_qp * x0 - x_ref)  - R * u_ref;
-    Eigen::MatrixXd eigen_qp_g = B_qp.transpose() * Q * (A_qp * x0 - x_ref)  + M.transpose() * R * (current_footholdX);
+    Eigen::MatrixXd eigen_qp_H = R + B_qp.transpose() * Q * B_qp;
+    // Eigen::MatrixXd eigen_qp_H = M.transpose() * R * M + B_qp.transpose() * Q * B_qp;
+    Eigen::MatrixXd eigen_qp_g = B_qp.transpose() * Q * (A_qp * x0 - x_ref)  - R * u_ref;
+    // Eigen::MatrixXd eigen_qp_g = B_qp.transpose() * Q * (A_qp * x0 - x_ref)  + M.transpose() * R * (current_footholdX);
 
 
-    // Eigen::MatrixXd eigen_qp_A = B_qp;
-    Eigen::MatrixXd eigen_qp_A = MM * B_qp - NN;
+    Eigen::MatrixXd eigen_qp_A = B_qp;
+    // Eigen::MatrixXd eigen_qp_A = MM * B_qp - NN;
     Eigen::MatrixXd eigen_qp_lbA = x_low_Vector - A_qp * x0;
     Eigen::MatrixXd eigen_qp_ubA = x_high_Vector - A_qp * x0;
     // Eigen::MatrixXd eigen_qp_lbA = cbf_gamma * x_low_Vector - MM * A_qp * x0;

@@ -57,11 +57,11 @@ int main(int argc, char* argv[]) {
 
   ///controller init
   gait_generator gait_gen(&robot);
-  FootHoldPlanner footplanner(0.5, 0.2, 0.5, 0.12); //comHeight, stepPeriod, averageSpeed, stepWidth
+  FootHoldPlanner footplanner(0.5, 0.2, 0.0, 0.12); //comHeight, stepPeriod, averageSpeed, stepWidth
  	swing_leg_controller swc(&robot,&gait_gen,&footplanner,0);
  	stance_leg_controller stc(&robot,&gait_gen,0);
   leg_controller l_control(&robot,&gait_gen,&swc,&stc);
-  Pin_KinDyn kinDynSolver("rsc/biped.urdf"); // kinematics and dynamics solver
+  Pin_KinDyn kinDynSolver("rsc/biped1.urdf"); // kinematics and dynamics solver
   DataBus RobotState(kinDynSolver.model_nv); // data bus
   WBC_priority WBC_solv(kinDynSolver.model_nv, 12, 16, 0.45, 0.001); // WBC solver
 
@@ -74,7 +74,7 @@ int main(int argc, char* argv[]) {
   Eigen::VectorXd user_cmd(5),interface_cmd(5);
   float global_timer = 0;
 
-  user_cmd<< 0.5,0.0,0.5,0.0,0.2;   //vx,vy,height,dyaw,time_duration
+  user_cmd<< 0.0,0.0,0.5,0.0,0.2;   //vx,vy,height,dyaw,time_duration
   interface_cmd = user_cmd;   //vx,vy,height,dyaw
   double x_com_desire=0.0;
   double y_com_desire=0.0;
@@ -115,12 +115,12 @@ int main(int argc, char* argv[]) {
     // y_com_desire +=  user_cmd[1] * 0.001;
     // yaw_desire += user_cmd[3] * 0.001;
     if(global_timer>5 && gait_gen.normalized_phase[0]<0.01){
-      user_cmd[4] = 0.25;
+      user_cmd[4] = 0.3;
     } 
     if(global_timer>10 && gait_gen.normalized_phase[0]<0.01) user_cmd[4] = 0.35;
     if(global_timer>15 && gait_gen.normalized_phase[0]<0.01) user_cmd[4] = 0.45;
     if(global_timer>25 && gait_gen.normalized_phase[0]<0.01) user_cmd[4] = 0.5;
-    cout<<global_timer<<endl;
+    // cout<<global_timer<<endl;
     interface_cmd = user_cmd;
     // double kp = 1;
     // interface_cmd[0] += kp*(x_com_desire-RobotState.q(0));
@@ -221,8 +221,8 @@ int main(int argc, char* argv[]) {
     //          << stc.states[3] << ", " << stc.states[4] << ", " <<stc.states[5] << ", "
     //          << footplanner.currentStancefootPosition_X << ", " << footplanner.currentStancefootPosition_Y << ", " << footplanner.currentStancefoot_ID
     //          << std::endl;
-    // std::cout<< swc.stance_foot_pos[1]<<std::endl;
-    // std::cout<< RobotState.stance_fe_pos_cur_W[1]<<std::endl;
+    std::cout<< swc.stance_foot_pos[2]<<std::endl;
+    std::cout<< RobotState.stance_fe_pos_cur_W[2]<<std::endl;
     dataFile << swc.foothold_dcm[0] << ", " << swc.foothold_dcm[1] << ", " << swc.foothold_dcm[2] << ", "
              << swc.foothold_heuristic[0] << ", " << swc.foothold_heuristic[1] << ", " << swc.foothold_heuristic[2] << ", "
              << stc.states[3] << ", " << stc.states[4] << ", " <<stc.states[5] << ", "
