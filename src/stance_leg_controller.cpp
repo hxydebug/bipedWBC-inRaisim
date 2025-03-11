@@ -184,17 +184,7 @@ Eigen::VectorXd stance_leg_controller::get_action(Eigen::VectorXd user_cmd){
     //m
     float m = 10.3;
 
-    //I_b to I_w
-    Eigen::Vector3d invI_b(1.0/0.31,1.0/0.41,1.0/0.01);//1.0/0.36,1.0/0.34,1.0/0.046
-    Eigen::Matrix3d invI_bM = invI_b.asDiagonal();
-    Eigen::Matrix3d invI_wM = rot_matrix*invI_bM*rot_matrix.transpose();
-
-    std::vector<double> force = Cmpc.ComputeContactForces(p_com,w_com,dp_com,dw_com,p_com_des,w_com_des,dp_com_des,dw_com_des,m,invI_wM,foot_positions_w,footcontact);
-    Eigen::Map<Eigen::VectorXd> force_E(force.data(),force.size());
-    // std::cout<<"QP-solved force:"<<force_E.transpose()<<std::endl;
-    // std::cout<<force_E<<std::endl;
-    // std::cout<<" "<<std::endl;
-    Eigen::VectorXd l_force,r_force;
+    Eigen::Vector3d l_force,r_force;
     l_force = force_E.head(3);
     r_force = force_E.tail(3);
     GRF << l_force, r_force;
